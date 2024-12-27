@@ -1,26 +1,27 @@
 <template>
-  <v-app dark>
+  <v-app>
     <!-- App Bar -->
-    <v-app-bar v-if="showDrawer" app style="background-color: #333; color: white;">
-      <v-app-bar-nav-icon @click="drawer = !drawer" style="color: white;"></v-app-bar-nav-icon>
-      <v-toolbar-title>Panel</v-toolbar-title>
+    <v-app-bar v-if="showDrawer" app style="background-color: #333; color: black;" color="white">
+      <v-app-bar-nav-icon @click.stop="drawer = !drawer" style="color: black;"></v-app-bar-nav-icon>
+      <v-toolbar-title>Cashier POS</v-toolbar-title>
     </v-app-bar>
 
     <!-- Navigation Drawer -->
     <v-navigation-drawer v-if="showDrawer" v-model="drawer" :mini-variant="miniVariant" :clipped="clipped" fixed app
-      style="background-color: #333;">
+      style="background-color: white;">
       <v-layout column fill-height>
         <!-- Navigation Items -->
         <v-list>
-          <v-list-item v-for="(item, i) in filteredItems" :key="i" :to="item.to" router exact style="color: white;">
+          <v-list-item v-for="(item, i) in filteredItems" :key="i" :to="item.to" router exact style="color: black;">
             <v-list-item-action>
-              <v-icon style="color: white;">{{ item.icon }}</v-icon>
+              <v-icon style="color: black;">{{ item.icon }}</v-icon>
             </v-list-item-action>
             <v-list-item-content>
               <v-list-item-title>{{ item.title }}</v-list-item-title>
             </v-list-item-content>
           </v-list-item>
         </v-list>
+
 
         <!-- Spacer to push logout button to the bottom -->
         <v-spacer></v-spacer>
@@ -36,6 +37,12 @@
         </v-list>
       </v-layout>
     </v-navigation-drawer>
+
+    <!-- Navigation Drawer -->
+    <!-- <v-navigation-drawer v-if="showDrawer" v-model="drawer2" :mini-variant="miniVariant" :clipped="clipped" fixed app
+      style="background-color: white;" right>
+      <cart_summary/>
+    </v-navigation-drawer> -->
 
     <!-- Main Content -->
     <v-main>
@@ -57,36 +64,21 @@ export default {
     return {
       clipped: false,
       drawer: false,
+      drawer2: true,
       miniVariant: false,
-      showDrawer: true,
+      showDrawer: false,
       userRole: null, // Add a property to store the user role
       items: [
-        { icon: 'mdi-view-dashboard', title: 'Dashboard', to: '/admin/dashboard', roles: ['admin'] },
-        { icon: 'mdi-account', title: 'Account Management', to: '/admin/accounts', roles: ['admin', 'cashier'] },
-        { icon: 'mdi-cube', title: 'Product Management', to: '/admin/products', roles: ['admin', 'cashier'] },
-        { icon: 'mdi-order-bool-ascending', title: 'Order Management', to: '/admin/orders', roles: ['admin', 'cashier'] },
-        { icon: 'mdi-currency-php', title: 'Price Management', to: '/admin/price', roles: ['admin', 'cashier'] },
-        { icon: 'mdi-folder', title: 'Category Management', to: '/admin/category', roles: ['admin'] },
-        { icon: 'mdi-warehouse', title: 'Inventory Management', to: '/admin/inventory', roles: ['admin', 'cashier'] },
-        { icon: 'mdi-credit-card', title: 'Payment Methods', to: '/admin/payments', roles: ['admin'] },
-        { icon: 'mdi-qrcode', title: 'QR Code', to: '/admin/qrscanner', roles: ['admin', 'cashier'] },
-        { icon: 'mdi-card-account-details-outline', title: 'Driver Module', to: '/driver/ddmodule', roles: ['admin','driver'] },
-        { icon: 'mdi-truck-alert-outline', title: 'Dispatch Module', to: '/dispatch/dmodule', roles: ['admin', 'dispatch'] },
-        { icon: 'mdi-cash-100', title: 'Cashier Module', to: '/cashier/module', roles: ['admin', 'cashier'] }
+        { icon: 'mdi-cash-100', title: 'Dashboard', to: '/cashier/cashier_dashboard', roles: ['admin', 'cashier'] },
+        { icon: 'mdi-cash-100', title: 'Customer', to: '/cashier/customer', roles: ['admin', 'cashier'] },
+        { icon: 'mdi-cash-100', title: 'Transaction', to: '/cashier/transaction_history', roles: ['admin', 'cashier'] },
+        { icon: 'mdi-cash-100', title: 'Payment', to: '/cashier/payment_method', roles: ['admin', 'cashier'] }
       ],
       showDrawerOnRoutes: [
-        '/driver/ddmodule',
-        '/dispatch/dmodule',
-        '/cashier/module',
-        '/admin/dashboard',
-        '/admin/accounts',
-        '/admin/products',
-        '/admin/price',
-        '/admin/category',
-        '/admin/inventory',
-        '/admin/orders',
-        '/admin/payments',
-        '/admin/qrscanner'
+        '/cashier/cashier_dashboard',
+        '/cashier/customer',
+        '/cashier/transaction_history',
+        '/cashier/payment_method',
       ]
     };
   },

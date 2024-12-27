@@ -1,89 +1,91 @@
 <template>
   <v-app>
     <v-container>
-      <!-- MAIN PRODUCTS Header -->
-      <v-row class="mb-4">
-        <v-col cols="12">
-          <div class="header-container">
-            <h2 class="header-title">MAIN PRODUCTS</h2>
-            <v-divider class="header-divider"></v-divider>
-          </div>
-        </v-col>
-      </v-row>
-
-      <!-- Search Field -->
-      <v-row class="mb-4">
-        <v-col cols="12">
-          <v-text-field v-model="searchQuery" label="Search Products" clearable placeholder="Search by product name"
-            @input="searchProducts"></v-text-field>
-        </v-col>
-      </v-row>
-
-      <!-- Product Grid -->
+      <!-- Main Layout -->
       <v-row>
-        <v-col v-for="product in filteredProducts" :key="product.id" cols="12" md="4">
-          <v-card class="hover-card">
-            <v-img :src="product.image" height="200px"></v-img>
+        <!-- Products Section -->
+        <v-col :cols="cart.length > 0 ? 8 : 12">
+          <!-- MAIN PRODUCTS Header -->
+          <v-row class="mb-4">
+            <v-col cols="12">
+              <div class="header-container">
+                <h2 class="header-title">MAIN PRODUCTS</h2>
+                <v-divider class="header-divider"></v-divider>
+              </div>
+            </v-col>
+          </v-row>
 
-            <v-card-title class="d-flex justify-space-between align-center">
-              <span class="product-name">{{ product.name }}</span>
-              <v-btn icon class="cart-icon" @click.stop="addToCart(product)">
-                <v-icon style="color: #FFA900;">mdi-cart-plus</v-icon>
-              </v-btn>
-            </v-card-title>
+          <!-- Search Field -->
+          <v-row class="mb-4">
+            <v-col cols="12">
+              <v-text-field v-model="searchQuery" label="Search Products" clearable placeholder="Search by product name"
+                @input="searchProducts" :disabled="loading"></v-text-field>
+            </v-col>
+          </v-row>
 
-            <v-card-subtitle class="product-price">₱{{ product.price }}</v-card-subtitle>
-          </v-card>
+          <!-- Product Grid -->
+          <v-row>
+            <!-- Show Loading Placeholders if Data is Loading -->
+            <template v-if="loading">
+              <v-col cols="12" md="4" v-for="n in 6" :key="n">
+                <v-skeleton-loader type="card" />
+              </v-col>
+            </template>
+
+            <!-- Show Products if Data is Loaded -->
+            <template v-else>
+              <v-col v-for="product in filteredProducts" :key="product.id" cols="12" md="4">
+                <v-card class="hover-card" @click.stop="addToCart(product)">
+                  <v-img :src="product.image" height="200px"></v-img>
+                  <v-card-title class="d-flex justify-space-between align-center">
+                    <span class="product-name">{{ product.name }}</span>
+                  </v-card-title>
+                  <v-card-subtitle class="product-price">₱{{ product.price }}</v-card-subtitle>
+                </v-card>
+              </v-col>
+            </template>
+          </v-row>
         </v-col>
-      </v-row>
 
-      <!-- Cart Summary -->
-      <v-row class="mt-5">
-        <v-col cols="12">
+        <!-- Vertical Divider -->
+        <v-divider v-if="cart.length > 0" vertical class="vertical-divider"></v-divider>
+
+        <!-- Cart Summary Section -->
+        <v-col v-if="cart.length > 0" cols="4">
           <div class="header-container">
             <h2 class="header-title">CART SUMMARY</h2>
             <v-divider class="header-divider"></v-divider>
           </div>
 
-          <v-data-table
-  :headers="cartHeaders"
-  :items="cart"
-  item-value="id"
-  class="elevation-1 cart-table"
-  dense
->
-  <template v-slot:body="{ items }">
-    <tbody>
-      <tr v-for="item in items" :key="item.id">
-        <!-- Ensure alignment matches the header -->
-        <td class="text-start">{{ item.name }}</td>
-        <td class="text-end">₱{{ item.price }}</td>
-        <td class="text-center">{{ item.quantity }}</td>
-        <td class="text-center">
-          <v-btn icon @click="removeFromCart(item.id)">
-            <v-icon color="red">mdi-delete</v-icon>
-          </v-btn>
-        </td>
-      </tr>
-    </tbody>
-  </template>
-</v-data-table>
+          <v-data-table :headers="cartHeaders" :items="cart" item-value="id" dense>
+            <template v-slot:body="{ items }">
+              <tbody>
+                <tr v-for="item in items" :key="item.id">
+                  <td class="text-start">{{ item.name }}</td>
+                  <td class="text-end">₱{{ item.price }}</td>
+                  <td class="text-center">{{ item.quantity }}</td>
+                  <td class="text-center">
+                    <v-btn icon @click="removeFromCart(item.id)">
+                      <v-icon color="red">mdi-delete</v-icon>
+                    </v-btn>
+                  </td>
+                </tr>
+              </tbody>
+            </template>
+          </v-data-table>
 
-          <v-row class="cart-summary">
-            <v-col cols="6" class="total-container">
-              <p class="total-text">Total: <strong>₱{{ cartTotal }}</strong></p>
-            </v-col>
-            <v-col cols="6" class="text-right">
-              <v-btn class="buy-now-btn" @click="checkout" :disabled="cart.length === 0 || loading">
-                <template v-if="loading">
-                  <v-progress-circular indeterminate size="24" color="white" />
-                </template>
-                <template v-else>
-                  Checkout
-                </template>
-              </v-btn>
-            </v-col>
-          </v-row>
+          <div class="cart-summary mt-3">
+            <p class="total-text">Total: <strong>₱{{ cartTotal }}</strong></p>
+            <v-btn class="buy-now-btn" block @click="checkout" :disabled="cart.length === 0 || loading" color="orange"
+              dark>
+              <template v-if="loading">
+                <v-progress-circular indeterminate size="24" color="white" />
+              </template>
+              <template v-else>
+                Checkout
+              </template>
+            </v-btn>
+          </div>
         </v-col>
       </v-row>
 
@@ -138,9 +140,10 @@ export default {
       itemList: [],
       cart: [],
       searchQuery: '',
-      loading: false,
+      loading: true,
       dialog: false, // Confirmation dialog state
       qrCodeDialog: false, // QR Code dialog state
+      showDrawer: true,
       cartHeaders: [
   { text: 'Product Name', value: 'name', align: 'start' },
   { text: 'Price', value: 'price', align: 'end' },
@@ -148,6 +151,13 @@ export default {
   { text: 'Actions', value: 'actions', align: 'center', sortable: false },
 ],
     };
+  },
+  computed: {
+    filteredProducts() {
+      return this.products.filter((product) =>
+        product.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+      );
+    },
   },
   async created() {
     try {
@@ -270,11 +280,23 @@ export default {
       return this.cart.reduce((total, item) => total + item.price * item.quantity, 0);
     },
   },
+  mounted() {
+    setTimeout(() => {
+      // Simulate data loading
+      this.products = [
+        { id: 1, name: "Product 1", price: 100, image: "image1.jpg" },
+        { id: 2, name: "Product 2", price: 200, image: "image2.jpg" },
+        { id: 3, name: "Product 3", price: 300, image: "image3.jpg" },
+      ];
+      this.loading = false;
+    }, 2000); // Simulates 2-second delay
+  },
 };
 </script>
 
 <style scoped>
 /* Add your styles here */
+
 .qr-description {
   margin-top: 10px;
   font-size: 14px;

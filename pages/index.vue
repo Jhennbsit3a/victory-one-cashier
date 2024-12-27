@@ -136,7 +136,7 @@ export default {
         const userRole = userDoc.data().role;
         if (['admin', 'cashier', 'owner', 'dispatcher'].includes(userRole)) {
           console.log(`Role "${userRole}" is validated. Access granted.`);
-          this.$router.push('/admin/dashboard');
+          this.$router.push('/cashier/cashier_dashboard');
         } else {
           console.log(`Role "${userRole}" is not authorized. Redirecting to no-access page.`);
           this.$router.push('/no-access');
