@@ -27,6 +27,7 @@
             </v-col>
           </v-row>
 
+
           <!-- Product Grid -->
           <v-row>
             <template v-if="loading">

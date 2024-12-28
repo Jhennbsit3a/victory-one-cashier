@@ -1,269 +1,265 @@
 <template>
-    <v-container>
-      <v-row>
-        <!-- Payment Methods Table -->
-        <v-col cols="12" class="mb-4">
-          <v-card class="elevation-2">
-            <v-card-title class="d-flex justify-between align-center">
-              <div class="headline">
-                <v-icon class="mr-2">mdi-credit-card</v-icon>
-                Payment Methods
-              </div>
-              <v-spacer></v-spacer>
-              <v-btn color="primary" icon @click="openDialog('Payment')">
-                <v-icon>mdi-plus</v-icon>
-              </v-btn>
+  <v-container class="d-flex align-center justify-center" style="height: 100vh;">
+    <v-row justify="space-between">
+      <!-- First Column -->
+      <v-col cols="12" md="6">
+        <v-card class="elevation-3">
+          <v-card-title class="headline text-center">
+            Order ID Details
+          </v-card-title>
+
+          <v-card-text>
+            <!-- Input Field for UID -->
+            <v-text-field
+              label="Enter Order UID"
+              v-model="orderUID"
+              outlined
+              dense
+              @change="fetchOrderDetails"
+              autofocus
+            ></v-text-field>
+            <!-- Reset Button -->
+            <v-btn color="primary" class="mt-1 reset-btn" @click="resetForm" fab small>
+              <v-icon>mdi-refresh</v-icon>
+            </v-btn>
+
+            <!-- User Information Section -->
+            <v-card class="mt-3" v-if="userDetails && Object.keys(userDetails).length > 0">
+              <v-card-title>User Information</v-card-title>
+              <v-simple-table>
+                <thead>
+                  <tr>
+                    <th>Field</th>
+                    <th>Value</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Customer Name</td>
+                    <td>{{ userDetails.firstName }} {{ userDetails.lastName }}</td>
+                  </tr>
+                </tbody>
+              </v-simple-table>
+            </v-card>
+
+            <!-- Order Information Section -->
+            <v-card class="mt-5" v-if="orderDetails">
+              <v-card-title>Order Information</v-card-title>
+              <v-simple-table>
+                <thead>
+                  <tr>
+                    <th>Field</th>
+                    <th>Value</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Payment Method</td>
+                    <td>{{ orderDetails.paymentMethod }}</td>
+                  </tr>
+                  <tr>
+                    <td>Delivery Address</td>
+                    <td>{{ orderDetails.deliveryAddress }}</td>
+                  </tr>
+                  <tr>
+                    <td>Estimated Delivery Date</td>
+                    <td>{{ orderDetails.estimatedDeliveryDate }}</td>
+                  </tr>
+                  <tr v-for="(item, index) in orderDetails.cartItems" :key="index">
+                    <td>{{ item.productName }}</td>
+                    <td>Qty - {{ item.Quantity }}</td>
+                  </tr>
+                  <tr>
+                    <td>Total</td>
+                    <td>{{ orderDetails.total }}</td>
+                  </tr>
+                </tbody>
+              </v-simple-table>
+            </v-card>
+
+            <!-- Error Alert for Invalid UID -->
+            <v-alert v-if="invalidOrder" type="error" class="mt-3" prominent>
+              Invalid Order UID or the Order does not exist.
+            </v-alert>
+          </v-card-text>
+        </v-card>
+      </v-col>
+
+      <!-- Second Column -->
+      <v-col cols="12" md="6">
+        <v-card class="pa-16 elevation-3">
+          <v-card-title >
+            <h3>Payment Method</h3>
+          </v-card-title>
+          <v-card class="elevation-3 hover-card cursor-pointer" @click="openGcashDialog">
+            <v-card-title>
+              <h3>GCASH</h3>
             </v-card-title>
-            <v-data-table :headers="paymentHeaders" :items="payments" item-key="id" class="elevation-1"
-              :header-class="{ 'text-align-center': true }">
-              <template v-slot:item.actions="{ item }">
-                <v-btn @click="setSelectedPayment(item)" color="blue" icon>
-                  <v-icon>mdi-pencil</v-icon>
-                </v-btn>
-                <v-btn @click="confirmDeletePayment(item.id)" color="red" icon>
-                  <v-icon>mdi-delete</v-icon>
-                </v-btn>
-              </template>
-            </v-data-table>
           </v-card>
-        </v-col>
-  
-        <!-- Delete Confirmation Dialog -->
-        <v-dialog v-model="deleteDialog" max-width="400">
-          <v-card>
-            <v-card-title class="headline">Confirm Deletion</v-card-title>
-            <v-card-text>
-              Are you sure you want to delete this payment method?
-            </v-card-text>
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="red" @click="deletePayment">Delete</v-btn>
-              <v-btn color="grey" @click="deleteDialog = false">Cancel</v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
-  
-        <!-- Logs Table -->
-        <v-col cols="12" class="mt-4">
-          <v-card class="elevation-2">
-            <v-card-title class="d-flex align-center">
-              <v-icon class="mr-2">mdi-history</v-icon>
-              Logs
+          <v-card class="mt-5 elevation- hover-card cursor-pointer">
+            <v-card-title>
+              <h3>CASH</h3>
             </v-card-title>
-            <v-data-table :headers="logHeaders" :items="logs" item-key="id" class="elevation-1"
-              :header-class="{ 'text-align-center': true }">
-              <template v-slot:item.timestamp="{ item }">
-                {{ formatDate(item.timestamp) }}
-              </template>
-            </v-data-table>
           </v-card>
-        </v-col>
-      </v-row>
-  
-      <!-- Add Item Dialog -->
-      <v-dialog v-model="dialog.visible" max-width="500">
+        </v-card>
+      </v-col>
+    </v-row>
+
+          <!-- GCash Info Dialog -->
+      <v-dialog v-model="gcashDialog" max-width="500px">
         <v-card>
-          <v-card-title class="headline">{{ dialog.title }}</v-card-title>
-          <v-divider></v-divider>
-          <v-form class="pa-4">
-            <v-text-field v-model="dialog.data.method" label="Payment Method" outlined dense required />            
-          </v-form>
+          <v-card-title class="headline">GCash Payment</v-card-title>
+          <v-card-text>
+            <div class="text-center">
+              <img src="@/assets/Gcash.jpg" alt="GCash Image" class="gcash-image" />
+              <p class="gcash-description">Scan the QR code to pay via GCash.</p>
+            <v-text-field
+            label="Gcash Reference Number"
+            required
+          ></v-text-field>         
+            </div>
+          </v-card-text>
           <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn text color="green" @click="saveDialogData">Save</v-btn>
-            <v-btn text color="grey" @click="closeDialog">Cancel</v-btn>
+            <v-btn @click="" color="green">Done</v-btn>
+            <v-btn @click="closeGcashDialog" color="red">Cancel</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
-    </v-container>
-  </template>
-  
-  <script>
-  import { firestore } from '~/plugins/firebase';
-  import { collection, addDoc, deleteDoc, doc, updateDoc, getDocs, onSnapshot } from 'firebase/firestore';
-  import { getAuth } from 'firebase/auth';
-  
-  export default {
-    data() {
-      return {
-        payments: [],
-        logs: [],
-        paymentHeaders: [
-          { text: 'Payment Method', value: 'method' },          
-          { text: 'Actions', value: 'actions', sortable: false }
-        ],
-        logHeaders: [
-          { text: 'Action', value: 'action' },
-          { text: 'Payment Method', value: 'method' },          
-          { text: 'Timestamp', value: 'timestamp' }
-        ],
-        paymentMethod: { method: '', description: '' },
-        selectedPayment: null,
-        deleteDialog: false,
-        paymentToDelete: null,
-        dialog: {
-          visible: false,
-          title: '',
-          data: { method: '', description: '' },
-          type: '' // Identifies which table is being updated
-        }
-      };
-    },
-    created() {
-      this.loadPayments();
-      this.loadLogs(); // Fetch logs
-    },
-    methods: {
-      // Fetch user ID for authenticated actions
-      getUserId() {
-        const user = getAuth().currentUser;
-        return user ? user.uid : null;
-      },
-      async loadLogs() {
-        const logsCollection = collection(firestore, 'Logs');
-        onSnapshot(logsCollection, (snapshot) => {
-          this.logs = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-        });
-      },
-      // Format timestamps for display
-      formatDate(timestamp) {
-        if (timestamp && timestamp.toDate) {
-          const date = timestamp.toDate();
-          return date.toLocaleString();
-        }
-        return '';
-      },
-      async logAction(action, payment) {
-        const userId = this.getUserId();
-        const logEntry = {
-          action, // 'Add', 'Edit', or 'Delete'
-          method: payment.method,
-          description: payment.description || '',
-          timestamp: new Date(),
-          userID: userId
-        };
-        await addDoc(collection(firestore, 'Logs'), logEntry);
-      },
-      // Load payments from Firebase
-      async loadPayments() {
-        const querySnapshot = await getDocs(collection(firestore, 'Payments'));
-        this.payments = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      },
-      // Set selected payment for editing
-      setSelectedPayment(payment) {
-  this.dialog.visible = true; // Open the dialog
-  this.dialog.title = "Edit Payment Method"; // Set the title
-  this.dialog.data = { ...payment }; // Populate the dialog with the selected payment data
-},  
-      // Clear the form
-      clearForm() {
-        this.paymentMethod = { method: '', description: '' };
-        this.selectedPayment = null;
-      },
-  
-      // Add or update a payment
-      async handleSubmit() {
-        if (this.selectedPayment) {
-          await this.updatePayment(this.selectedPayment.id);
-        } else {
-          await this.addPayment();
-        }
-        this.dialog.visible = false; // Close the dialog
-        this.clearForm();
-        this.loadPayments();
-      },
-  
-      // Add a new payment to Firebase
-      async addPayment() {
-        const newPayment = {
-          method: this.paymentMethod.method,
-          description: this.paymentMethod.description || '',
-          createdAt: new Date(),  // No userID field here
-        };
-        const docRef = await addDoc(collection(firestore, 'Payments'), newPayment);
-        this.logAction('Add', { ...newPayment, id: docRef.id });
-      },
-      // Add log when editing a payment
-      async updatePayment(paymentId) {
-        const userId = this.getUserId();
-        const paymentRef = doc(firestore, 'Payments', paymentId);
-        const updatedPayment = {
-          method: this.paymentMethod.method,
-          description: this.paymentMethod.description || ''
-        };
-        await updateDoc(paymentRef, updatedPayment);
-        this.logAction('Edit', { id: paymentId, ...updatedPayment });
-      },
-  
-      // Prompt delete confirmation
-      confirmDeletePayment(paymentId) {
-        this.paymentToDelete = paymentId;
-        this.deleteDialog = true;
-      },
-  
-      // Add log when deleting a payment
-      async deletePayment() {
-        if (this.paymentToDelete) {
-          const payment = this.payments.find((p) => p.id === this.paymentToDelete);
-          await deleteDoc(doc(firestore, 'Payments', this.paymentToDelete));
-          this.logAction('Delete', payment);
-          this.payments = this.payments.filter((p) => p.id !== this.paymentToDelete);
-          this.paymentToDelete = null;
-        }
-        this.deleteDialog = false;
-      },
-  
-      // Open the dialog for adding data
-      openDialog(type) {
-        this.dialog.visible = true;
-        this.dialog.title = `Add New ${type}`;
-        this.dialog.type = type;
-        this.dialog.data = { method: '', description: '' };
-      },
-  
-      // Close the dialog
-      closeDialog() {
-        this.dialog.visible = false;
-      },
-  
-      // Save new data from the dialog
-      async saveDialogData() {
-  const paymentData = this.dialog.data;
-  
-  if (paymentData.id) {
-    // Update existing payment
-    const paymentRef = doc(firestore, 'Payments', paymentData.id);
-    const updatedPayment = {
-      method: paymentData.method,
-      description: paymentData.description || '',
-    };
-    await updateDoc(paymentRef, updatedPayment);
-    this.logAction('Edit', { id: paymentData.id, ...updatedPayment });
-  } else {
-    // Add new payment
-    const newPayment = {
-      method: paymentData.method,
-      description: paymentData.description || '',
-      createdAt: new Date(),
-    };
-    const docRef = await addDoc(collection(firestore, 'Payments'), newPayment);
-    this.logAction('Add', { ...newPayment, id: docRef.id });
-  }
+  </v-container>
+</template>
 
-  this.closeDialog(); // Close the dialog
-  this.loadPayments(); // Reload payments to refresh the table
-},
+
+<script>
+import { doc, getDoc } from "firebase/firestore";
+import { firestore } from "~/plugins/firebase";
+
+
+export default {
+  data() {
+    return {
+      scannedData: "", // Scanned data from QR scanner
+      orderUID: "", // UID input
+      orderDetails: null, // Fetched order details
+      userDetails: {}, // User details
+      invalidOrder: false, // Invalid order 
+      gcashDialog: false,
+    };
+  },
+  computed: {
+    shouldFocus() {
+      // Return true when you want the field to be focused
+      // For example, after navigating to this component
+      return this.$route.name === 'YourRouteName'
     }
-  };
-  </script>
-  
-  <style scoped>
-  .v-data-table {
-    background-color: white;
-  }
-  
-  .v-btn {
-    margin: 5px;
-  }
-  </style>
-  
+  },
+  methods: {
+    // Fetch order details by UID
+    async fetchOrderDetails() {
+      try {
+        if (!this.orderUID.trim()) {
+          this.invalidOrder = true;
+          this.orderDetails = null;
+          return;
+        }
+
+        const orderRef = doc(firestore, "Orders", this.orderUID.trim());
+        const orderSnap = await getDoc(orderRef);
+
+        if (orderSnap.exists()) {
+          this.orderDetails = orderSnap.data(); // Set order details
+          this.invalidOrder = false; // Reset invalid flag
+
+          // Fetch user details using the userId from the order
+          const userRef = doc(firestore, "Users", this.orderDetails.userId);
+          const userSnap = await getDoc(userRef);
+          if (userSnap.exists()) {
+            this.userDetails = userSnap.data(); // Set user details
+          } else {
+            this.userDetails = {}; // Reset if user not found
+          }
+        } else {
+          this.orderDetails = null;
+          this.invalidOrder = true; // UID not found
+        }
+      } catch (error) {
+        console.error("Error fetching order details:", error);
+        this.orderDetails = null;
+        this.invalidOrder = true;
+      }
+    },
+    openGcashDialog() {
+      this.gcashDialog = true; // Show GCash dialog
+    },
+    closeGcashDialog() {
+      this.gcashDialog = false; // Close GCash dialog
+    },
+
+    // Reset form fields
+    resetForm() {
+      this.scannedData = "";
+      this.orderUID = "";
+      this.orderDetails = null;
+      this.userDetails = {};
+      this.invalidOrder = false;
+    },
+  },
+};
+</script>
+
+<style scoped>
+.v-container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.v-card {
+  background-color: #f5f5f5;
+}
+
+.v-card-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1976d2;
+}
+
+.scanned-data-textarea {
+  background-color: #ffffff;
+  border-radius: 8px;
+  font-size: 1rem;
+  width: 100%;
+}
+
+.reset-btn {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.v-alert {
+  padding: 15px;
+}
+/* Product Card Styles */
+.hover-card {
+  transition: transform 0.3s, box-shadow 0.3s;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.hover-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+.cursor-pointer {
+  cursor: pointer;
+}
+.gcash-image {
+  width: 100%;
+  height: auto;
+  max-width: 300px;
+  margin-bottom: 10px;
+}
+
+.gcash-description {
+  font-size: 1.2rem;
+  color: #444;
+}
+</style>
