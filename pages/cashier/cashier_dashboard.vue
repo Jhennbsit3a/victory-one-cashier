@@ -1,7 +1,6 @@
 <template>
   <v-app>
-    <v-container>
-      <!-- Main Layout -->
+    <v-container class="p-0">
       <v-row>
         <!-- Products Section -->
         <v-col :cols="cart.length > 0 ? 8 : 12">
@@ -18,21 +17,24 @@
           <!-- Search Field -->
           <v-row class="mb-4">
             <v-col cols="12">
-              <v-text-field v-model="searchQuery" label="Search Products" clearable placeholder="Search by product name"
-                @input="searchProducts" :disabled="loading"></v-text-field>
+              <v-text-field
+                v-model="searchQuery"
+                label="Search Products"
+                clearable
+                placeholder="Search by product name"
+                @input="searchProducts"
+                :disabled="loading"
+              ></v-text-field>
             </v-col>
           </v-row>
 
           <!-- Product Grid -->
           <v-row>
-            <!-- Show Loading Placeholders if Data is Loading -->
             <template v-if="loading">
               <v-col cols="12" md="4" v-for="n in 6" :key="n">
                 <v-skeleton-loader type="card" />
               </v-col>
             </template>
-
-            <!-- Show Products if Data is Loaded -->
             <template v-else>
               <v-col v-for="product in filteredProducts" :key="product.id" cols="12" md="4">
                 <v-card class="hover-card" @click.stop="addToCart(product)">
@@ -46,40 +48,80 @@
             </template>
           </v-row>
         </v-col>
-
         <!-- Vertical Divider -->
         <v-divider v-if="cart.length > 0" vertical class="vertical-divider"></v-divider>
-
-        <!-- Cart Summary Section -->
+        <!-- Cart Section -->
         <v-col v-if="cart.length > 0" cols="4">
-          <div class="header-container">
-            <h2 class="header-title">CART SUMMARY</h2>
+          <div class="header-container text-center">
+            <h2>PRODUCT CHECK OUT</h2>
             <v-divider class="header-divider"></v-divider>
           </div>
 
-          <v-data-table :headers="cartHeaders" :items="cart" item-value="id" dense>
-            <template v-slot:body="{ items }">
-              <tbody>
-                <tr v-for="item in items" :key="item.id">
-                  <td class="text-start">{{ item.name }}</td>
-                  <td class="text-end">₱{{ item.price }}</td>
-                  <td class="text-center">{{ item.quantity }}</td>
-                  <td class="text-center">
-                    <v-btn icon @click="removeFromCart(item.id)">
-                      <v-icon color="red">mdi-delete</v-icon>
-                    </v-btn>
-                  </td>
-                </tr>
-              </tbody>
-            </template>
-          </v-data-table>
+          <!-- Cart List -->
+          <v-list>
+            <v-list-item-group>
+              <v-list-item v-for="(item, index) in cart" :key="item.id" class="bordered-item">
+                <v-list-item-content>
+                  <!-- Clickable Title -->
+                  <v-menu
+                    bottom
+                    offset-y
+                    :close-on-content-click="false"
+                    transition="slide-y-transition"
+                  >
+                    <template #activator="{ on, attrs }">
+                      <v-list-item-title
+                        v-bind="attrs"
+                        v-on="on"
+                        class="cursor-pointer"
+                      >
+                        <div class="d-flex justify-space-between align-center border">
+                          <span>{{ index + 1 }}. {{ item.name }}</span>
+                          <span>₱{{ item.price }}</span>
+                        </div>
+                      </v-list-item-title>
+                    </template>
 
+                    <!-- Dropdown Content -->
+                    <v-card>
+                      <v-card-text>
+                        <div class="d-flex justify-space-between align-center">
+                          <span>Quantity:</span>
+                          <div class="quantity-control">
+                            <v-btn small outlined @click.stop="updateQuantity(item.id, -1)">-</v-btn>
+                            <span class="mx-2">{{ item.quantity }}</span>
+                            <v-btn small outlined @click.stop="updateQuantity(item.id, 1)">+</v-btn>
+                          </div>
+                        </div>
+                      </v-card-text>
+                    </v-card>
+                  </v-menu>
+                </v-list-item-content>
+
+                <!-- Trash Icon -->
+                <v-list-item-icon>
+                  <v-icon color="red" @click="removeFromCart(item.id)" class="cursor-pointer">
+                    mdi-trash-can
+                  </v-icon>
+                </v-list-item-icon>
+              </v-list-item>
+              <v-divider></v-divider>
+            </v-list-item-group>
+          </v-list>
+
+          <!-- Total and Checkout -->
           <div class="cart-summary mt-3">
             <p class="total-text">Total: <strong>₱{{ cartTotal }}</strong></p>
-            <v-btn class="buy-now-btn" block @click="checkout" :disabled="cart.length === 0 || loading" color="orange"
-              dark>
-              <template v-if="loading">
-                <v-progress-circular indeterminate size="24" color="white" />
+            <v-btn
+              class="buy-now-btn"
+              block
+              @click="checkout"
+              :disabled="cart.length === 0 || loading2"
+              color="orange"
+              dark
+            >
+              <template v-if="loading2">
+                <v-progress-circular indeterminate size="24" color="orange" />
               </template>
               <template v-else>
                 Checkout
@@ -89,7 +131,7 @@
         </v-col>
       </v-row>
 
-      <!-- Checkout Confirmation Dialog -->
+            <!-- Checkout Confirmation Dialog -->
       <v-dialog v-model="dialog" max-width="400px">
         <v-card>
           <v-card-title class="headline">Order Confirmation</v-card-title>
@@ -141,6 +183,7 @@ export default {
       cart: [],
       searchQuery: '',
       loading: true,
+      loading2: false,
       dialog: false, // Confirmation dialog state
       qrCodeDialog: false, // QR Code dialog state
       showDrawer: true,
@@ -189,6 +232,12 @@ export default {
         (product) => product.ProductType === category.ProductType
       );
     },
+    updateQuantity(productId, change) {
+      const product = this.cart.find((item) => item.id === productId);
+      if (product) {
+        product.quantity = Math.max(product.quantity + change, 1);
+      }
+    },
     searchProducts() {
       const query = this.searchQuery.toLowerCase();
       this.filteredProducts = this.products.filter((product) =>
@@ -212,7 +261,7 @@ export default {
     return; // Stop the checkout process if the cart is empty
   }
 
-  this.loading = true;
+  this.loading2 = true;
 
   try {
     // Define the order data
@@ -249,7 +298,7 @@ export default {
   } catch (error) {
     console.error('Error during checkout:', error);
   } finally {
-    this.loading = false;
+    this.loading2 = false;
   }
 },
     generateQRCode(data) {
@@ -388,5 +437,34 @@ export default {
 
 .buy-now-btn:hover {
   background-color: #FF8C00;
+}
+.cart-dropdown-btn {
+  border-radius: 8px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.cart-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.cart-item:last-child {
+  border-bottom: none;
+}
+.quantity-control {
+  display: flex;
+  align-items: center;
+}
+.cursor-pointer {
+  cursor: pointer;
+}
+.bordered-item {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 8px; /* Adds spacing between items */
 }
 </style>

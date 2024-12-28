@@ -64,15 +64,14 @@ export default {
     return {
       clipped: false,
       drawer: false,
-      drawer2: true,
       miniVariant: false,
       showDrawer: false,
       userRole: null, // Add a property to store the user role
       items: [
-        { icon: 'mdi-cash-100', title: 'Dashboard', to: '/cashier/cashier_dashboard', roles: ['admin', 'cashier'] },
-        { icon: 'mdi-cash-100', title: 'Customer', to: '/cashier/customer', roles: ['admin', 'cashier'] },
-        { icon: 'mdi-cash-100', title: 'Transaction', to: '/cashier/transaction_history', roles: ['admin', 'cashier'] },
-        { icon: 'mdi-cash-100', title: 'Payment', to: '/cashier/payment_method', roles: ['admin', 'cashier'] }
+        { icon: 'mdi-view-dashboard', title: 'Dashboard', to: '/cashier/cashier_dashboard', roles: ['admin', 'cashier'] },
+        { icon: 'mdi-account-group', title: 'Customer', to: '/cashier/customer', roles: ['admin', 'cashier'] },
+        { icon: 'mdi-swap-horizontal', title: 'Transaction', to: '/cashier/transaction_history', roles: ['admin', 'cashier'] },
+        { icon: 'mdi-credit-card', title: 'Payment', to: '/cashier/payment_method', roles: ['admin', 'cashier'] }
       ],
       showDrawerOnRoutes: [
         '/cashier/cashier_dashboard',
