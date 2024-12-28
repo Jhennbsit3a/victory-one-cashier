@@ -86,20 +86,48 @@
       </v-col>
 
       <!-- Second Column -->
+      <!-- Second Column -->
       <v-col cols="12" md="6">
         <v-card class="pa-16 elevation-3">
-          <v-card-title >
+          <v-card-title>
             <h3>Payment Method</h3>
           </v-card-title>
+          <!-- GCASH -->
           <v-card class="elevation-3 hover-card cursor-pointer" @click="openGcashDialog">
             <v-card-title>
               <h3>GCASH</h3>
             </v-card-title>
           </v-card>
-          <v-card class="mt-5 elevation- hover-card cursor-pointer">
+
+          <!-- CASH -->
+          <v-card class="mt-5 elevation-3 hover-card cursor-pointer">
             <v-card-title>
               <h3>CASH</h3>
             </v-card-title>
+
+            <v-card-text>
+              <v-text-field
+                label="Total Amount"
+                v-model.number="totalAmount"
+                outlined
+                dense
+              ></v-text-field>
+
+              <v-text-field
+                label="Cash Given"
+                v-model.number="cashGiven"
+                outlined
+                dense
+              ></v-text-field>
+
+              <v-btn color="primary" class="mt-2" @click="calculateChange">
+                Calculate Change
+              </v-btn>
+
+              <v-alert type="success" class="mt-3" v-if="change !== null">
+                Change: {{ change.toFixed(2) }}
+              </v-alert>
+            </v-card-text>
           </v-card>
         </v-card>
       </v-col>
@@ -120,7 +148,7 @@
             </div>
           </v-card-text>
           <v-card-actions>
-            <v-btn @click="" color="green">Done</v-btn>
+            <v-btn @click="closeGcashDialog" color="green">Done</v-btn>
             <v-btn @click="closeGcashDialog" color="red">Cancel</v-btn>
           </v-card-actions>
         </v-card>
@@ -143,6 +171,9 @@ export default {
       userDetails: {}, // User details
       invalidOrder: false, // Invalid order 
       gcashDialog: false,
+      totalAmount: 0,
+      cashGiven: 0,
+      change: null,
     };
   },
   computed: {
@@ -153,6 +184,14 @@ export default {
     }
   },
   methods: {
+    calculateChange() {
+      if (this.cashGiven >= this.totalAmount) {
+        this.change = this.cashGiven - this.totalAmount;
+      } else {
+        this.change = null;
+        alert('Insufficient cash provided!');
+      }
+    },
     // Fetch order details by UID
     async fetchOrderDetails() {
       try {

@@ -2,6 +2,12 @@
   <v-app>
     <v-container class="p-0">
       <v-row>
+
+        <!-- <v-col cols="12" md="4">
+            <v-card class="hover-card pa-16">
+              Walk-in Order
+            </v-card>
+        </v-col> -->
         <!-- Products Section -->
         <v-col :cols="cart.length > 0 ? 8 : 12">
           <!-- MAIN PRODUCTS Header -->
@@ -132,7 +138,7 @@
       </v-row>
 
             <!-- Checkout Confirmation Dialog -->
-      <v-dialog v-model="dialog" max-width="400px">
+      <!-- <v-dialog v-model="dialog" max-width="400px">
         <v-card>
           <v-card-title class="headline">Order Confirmation</v-card-title>
           <v-card-text>Your order has been successfully placed!</v-card-text>
@@ -141,7 +147,7 @@
             <v-btn color="primary" text @click="closeDialog">OK</v-btn>
           </v-card-actions>
         </v-card>
-      </v-dialog>
+      </v-dialog> -->
 
       <!-- QR Code Dialog -->
       <!-- <v-dialog v-model="qrCodeDialog" max-width="400px" v-if="qrCodeDialog">
