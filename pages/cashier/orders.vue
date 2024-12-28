@@ -1,5 +1,43 @@
 <template>
   <v-container>
+          <!-- Separated Total Orders, Income, and Sales -->
+      <v-card-title class="headline text-center">
+        <v-icon class="mr-2" large style="color: white;">mdi-currency-php</v-icon>
+        Sales Overview
+      </v-card-title>
+      <v-row class="ma-5">
+        <v-col cols="12" md="4">
+          <v-card class="elevation-2 statistics-card">
+            <v-card-title class="headline">
+              <v-icon class="mr-2" color="orange" large>mdi-cart-outline</v-icon>
+              Total Orders
+            </v-card-title>
+            <v-card-text class="text-h2">{{ totalOrders }}</v-card-text>
+          </v-card>
+        </v-col>
+  
+        <v-col cols="12" md="4">
+          <v-card class="elevation-2 statistics-card">
+            <v-card-title class="headline">
+              <v-icon class="mr-2" color="teal" large>mdi-cash</v-icon>
+              Total Income
+            </v-card-title>
+            <v-card-text class="text-h2">₱ {{ totalIncome }}</v-card-text>
+          </v-card>
+        </v-col>
+  
+        <v-col cols="12" md="4">
+          <v-card class="elevation-2 statistics-card">
+            <v-card-title class="headline">
+              <v-icon class="mr-2" color="purple" large>mdi-currency-usd</v-icon>
+              Total Sales
+            </v-card-title>
+            <v-card-text class="text-h2">₱ {{ totalSales }}</v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
+
+
     <v-card>
       <v-card-title>Orders</v-card-title>
       <v-data-table :headers="headers" :items="customerOrders" item-value="userId" class="elevation-1" dense>
@@ -91,10 +129,46 @@ export default {
       orders: [],
       dialogVisible: false,
       selectedOrder: {},
-      customerOrders: [], // Data property to hold customer order data
+      customerOrders: [],
+        totalOrders: 0,
+        totalSales: 0,
+        totalIncome: 0, // Data property to hold customer order data
     };
   },
   methods: {
+    loadTotalOrders() {
+        // const ordersRef = collection(firestore, 'Orders');
+        // const ordersQuery = query(ordersRef, where('status', '!=', 'Cancelled'));
+        // this.unsubscribeOrders = onSnapshot(ordersQuery, (snapshot) => {
+        //   this.totalOrders = snapshot.size;
+        // });
+      },
+      loadTotalSales() {
+        const ordersRef = collection(firestore, 'Orders');
+        this.unsubscribeSales = onSnapshot(ordersRef, (snapshot) => {
+          let totalSalesAmount = 0;
+          snapshot.forEach((doc) => {
+            const data = doc.data();
+            if (data.total) {
+              totalSalesAmount += data.total;
+            }
+          });
+          this.totalSales = totalSalesAmount.toFixed(2);
+        });
+      },
+      loadTotalIncome() {
+        const ordersRef = collection(firestore, 'Orders');
+        this.unsubscribeIncome = onSnapshot(ordersRef, (snapshot) => {
+          let income = 0;
+          snapshot.forEach((doc) => {
+            const data = doc.data();
+            if (data.tax) {
+              income += data.tax;
+            }
+          });
+          this.totalIncome = income.toFixed(2);
+        });
+      },
     // Fetch product name from Firestore
     async fetchProductName(productID) {
       try {
@@ -124,13 +198,12 @@ export default {
               collection(firestore, "Orders"),
               where("userId", "==", customerDoc.id) // Filter orders by customer ID
             );
-
+            let totalorder = 0;
         onSnapshot(ordersQuery, async (ordersSnapshot) => {
         for (const orderDoc of ordersSnapshot.docs) {
             const orderData = orderDoc.data();
             // Loop through cartItems
             orderData.cartItems.forEach((item) => {
-            
             // Check the status of the order
             if (orderData.status === "Pending") {
                 const order = {
@@ -144,12 +217,13 @@ export default {
                 deliveryAddress: orderData.deliveryAddress,
                 estimatedDeliveryDate: orderData.estimatedDeliveryDate
                 };
-
+                 totalorder++;
                 // Push the order only if the status matches the criteria
                 customerOrders.push(order);
             }
             });
         }
+        this.totalOrders += totalorder;
 
   // Update the component's data with a copy of the orders
   this.customerOrders = [...customerOrders];
@@ -174,6 +248,9 @@ export default {
 
   mounted() {
     this.fetchCustomerOrders(); // Fetch customer orders when the component is mounted
+    this.loadTotalOrders();
+    this.loadTotalSales();
+    this.loadTotalIncome();
   },
 };
 </script>

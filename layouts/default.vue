@@ -65,7 +65,7 @@ export default {
       clipped: false,
       drawer: false,
       miniVariant: false,
-      showDrawer: false,
+      showDrawer: true,
       userRole: null, // Add a property to store the user role
       items: [
         { icon: 'mdi-view-dashboard', title: 'Home', to: '/cashier/cashier_dashboard', roles: ['admin', 'cashier'] },
