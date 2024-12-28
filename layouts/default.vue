@@ -69,15 +69,16 @@ export default {
       userRole: null, // Add a property to store the user role
       items: [
         { icon: 'mdi-credit-card', title: 'Cashier', to: '/cashier/payment_method', roles: ['admin', 'cashier'] },
-        { icon: 'mdi-view-dashboard', title: 'Products', to: '/cashier/cashier_dashboard', roles: ['admin', 'cashier'] },
+        { icon: 'mdi-view-dashboard', title: 'Walk-in Order', to: '/cashier/customer_info', roles: ['admin', 'cashier'] },
         { icon: 'mdi-account-group', title: 'Orders', to: '/cashier/orders', roles: ['admin', 'cashier'] },
         { icon: 'mdi-swap-horizontal', title: 'Transaction', to: '/cashier/transaction_history', roles: ['admin', 'cashier'] },
       ],
       showDrawerOnRoutes: [
-        '/cashier/cashier_dashboard',
         '/cashier/orders',
         '/cashier/transaction_history',
         '/cashier/payment_method',
+        '/cashier/customer_info',
+        '/cashier/walkin_order',
       ]
     };
   },

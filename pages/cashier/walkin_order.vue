@@ -2,12 +2,6 @@
   <v-app>
     <v-container class="p-0">
       <v-row>
-
-        <!-- <v-col cols="12" md="4">
-            <v-card class="hover-card pa-16">
-              Walk-in Order
-            </v-card>
-        </v-col> -->
         <!-- Products Section -->
         <v-col :cols="cart.length > 0 ? 8 : 12">
           <!-- MAIN PRODUCTS Header -->
@@ -56,85 +50,96 @@
         </v-col>
         <!-- Vertical Divider -->
         <v-divider v-if="cart.length > 0" vertical class="vertical-divider"></v-divider>
-        <!-- Cart Section -->
-        <v-col v-if="cart.length > 0" cols="4">
-          <div class="header-container text-center">
-            <h2>PRODUCT CHECK OUT</h2>
-            <v-divider class="header-divider"></v-divider>
-          </div>
+  <!-- Cart Section -->
+  <v-col v-if="cart.length > 0" cols="4">
+    <div class="header-container text-center">
+      <h2>PRODUCT CHECK OUT</h2>
+      <v-divider class="header-divider"></v-divider>
+    </div>
 
-          <!-- Cart List -->
-          <v-list>
-            <v-list-item-group>
-              <v-list-item v-for="(item, index) in cart" :key="item.id" class="bordered-item">
-                <v-list-item-content>
-                  <!-- Clickable Title -->
-                  <v-menu
-                    bottom
-                    offset-y
-                    :close-on-content-click="false"
-                    transition="slide-y-transition"
-                  >
-                    <template #activator="{ on, attrs }">
-                      <v-list-item-title
-                        v-bind="attrs"
-                        v-on="on"
-                        class="cursor-pointer"
-                      >
-                        <div class="d-flex justify-space-between align-center border">
-                          <span>{{ index + 1 }}. {{ item.name }}</span>
-                          <span>₱{{ item.price }}</span>
-                        </div>
-                      </v-list-item-title>
-                    </template>
+    <!-- Customer Details -->
+    <v-card class="mb-3">
+      <v-card-title>
+        <h3>Customer Details</h3>
+      </v-card-title>
+      <v-card-text>
+        <p><strong>Name:</strong> {{ customerDetails.name }}</p>
+        <p><strong>Address:</strong> {{ customerDetails.address }}</p>
+      </v-card-text>
+    </v-card>
 
-                    <!-- Dropdown Content -->
-                    <v-card>
-                      <v-card-text>
-                        <div class="d-flex justify-space-between align-center">
-                          <span>Quantity:</span>
-                          <div class="quantity-control">
-                            <v-btn small outlined @click.stop="updateQuantity(item.id, -1)">-</v-btn>
-                            <span class="mx-2">{{ item.quantity }}</span>
-                            <v-btn small outlined @click.stop="updateQuantity(item.id, 1)">+</v-btn>
-                          </div>
-                        </div>
-                      </v-card-text>
-                    </v-card>
-                  </v-menu>
-                </v-list-item-content>
-
-                <!-- Trash Icon -->
-                <v-list-item-icon>
-                  <v-icon color="red" @click="removeFromCart(item.id)" class="cursor-pointer">
-                    mdi-trash-can
-                  </v-icon>
-                </v-list-item-icon>
-              </v-list-item>
-              <v-divider></v-divider>
-            </v-list-item-group>
-          </v-list>
-
-          <!-- Total and Checkout -->
-          <div class="cart-summary mt-3">
-            <p class="total-text">Total: <strong>₱{{ cartTotal }}</strong></p>
-            <v-btn
-              class="buy-now-btn"
-              block
-              @click="checkout"
-              :disabled="cart.length === 0 || loading2"
-              color="orange"
-              dark
+    <!-- Cart List -->
+    <v-list>
+      <v-list-item-group>
+        <v-list-item v-for="(item, index) in cart" :key="item.id" class="bordered-item">
+          <v-list-item-content>
+            <!-- Clickable Title -->
+            <v-menu
+              bottom
+              offset-y
+              :close-on-content-click="false"
+              transition="slide-y-transition"
             >
-              <template v-if="loading2">
-                <v-progress-circular indeterminate size="24" color="orange" />
+              <template #activator="{ on, attrs }">
+                <v-list-item-title
+                  v-bind="attrs"
+                  v-on="on"
+                  class="cursor-pointer"
+                >
+                  <div class="d-flex justify-space-between align-center border">
+                    <span>{{ index + 1 }}. {{ item.name }}</span>
+                    <span>₱{{ item.price }}</span>
+                  </div>
+                </v-list-item-title>
               </template>
-              <template v-else>
-                Proceed
-              </template>
-            </v-btn>
-          </div>
-        </v-col>
+
+              <!-- Dropdown Content -->
+              <v-card>
+                <v-card-text>
+                  <div class="d-flex justify-space-between align-center">
+                    <span>Quantity:</span>
+                    <div class="quantity-control">
+                      <v-btn small outlined @click.stop="updateQuantity(item.id, -1)">-</v-btn>
+                      <span class="mx-2">{{ item.quantity }}</span>
+                      <v-btn small outlined @click.stop="updateQuantity(item.id, 1)">+</v-btn>
+                    </div>
+                  </div>
+                </v-card-text>
+              </v-card>
+            </v-menu>
+          </v-list-item-content>
+
+          <!-- Trash Icon -->
+          <v-list-item-icon>
+            <v-icon color="red" @click="removeFromCart(item.id)" class="cursor-pointer">
+              mdi-trash-can
+            </v-icon>
+          </v-list-item-icon>
+        </v-list-item>
+        <v-divider></v-divider>
+      </v-list-item-group>
+    </v-list>
+
+    <!-- Total and Checkout -->
+    <div class="cart-summary mt-3">
+      <p class="total-text">Total: <strong>₱{{ cartTotal }}</strong></p>
+      <v-btn
+        class="buy-now-btn"
+        block
+        @click="proceedToPayment"
+        :disabled="cart.length === 0 || loading2"
+        color="orange"
+        dark
+      >
+        <template v-if="loading2">
+          <v-progress-circular indeterminate size="24" color="orange" />
+        </template>
+        <template v-else>
+          Proceed
+        </template>
+      </v-btn>
+    </div>
+  </v-col>
       </v-row>
 
             <!-- Checkout Confirmation Dialog -->
@@ -176,8 +181,9 @@ import {
   collection,
   addDoc,
   onSnapshot,
-  serverTimestamp,
+  serverTimestamp,doc
 } from 'firebase/firestore';
+import { getAuth } from "firebase/auth";
 import QRCode from 'qrcode'; // Import QRCode library
 
 export default {
@@ -193,12 +199,10 @@ export default {
       dialog: false, // Confirmation dialog state
       qrCodeDialog: false, // QR Code dialog state
       showDrawer: true,
-      cartHeaders: [
-  { text: 'Product Name', value: 'name', align: 'start' },
-  { text: 'Price', value: 'price', align: 'end' },
-  { text: 'Quantity', value: 'quantity', align: 'center' },
-  { text: 'Actions', value: 'actions', align: 'center', sortable: false },
-],
+      customerDetails: {
+        name: '',
+        address: ''
+      },
     };
   },
   computed: {
@@ -232,6 +236,101 @@ export default {
     }
   },
   methods: {
+    async saveCustomerDetails() {
+
+      this.loading2 = true; // Show loading animation
+
+      try {
+        // Prepare customer data
+        const customerData = {
+          firstName: sessionStorage.getItem('customerFirstName'),
+          lastName: sessionStorage.getItem('customerLastName'),
+          role: "customer", // Assign the role
+        };
+
+        // Save customer details to Firestore
+        const usersRef = collection(firestore, "Users");
+        const userDocRef = await addDoc(usersRef, customerData);
+
+        // Save autogenerated user ID to session storage
+        const userId = userDocRef.id;
+        //    // Update Firestore document to include the userId
+        // await userDocRef.update({ userId });
+
+        // Save the userId and other details to session storage
+        sessionStorage.setItem("customerUserId", userId);
+
+        // Navigate to the next route
+        this.$router.push("/cashier/payment_method");
+      } catch (error) {
+        console.error("Error saving customer details:", error);
+        alert("There was an issue saving your details. Please try again.");
+      } finally {
+        this.loading = false; // Hide loading animation
+      }
+    },
+    // async proceedToPayment() {
+    //   if (this.cart.length === 0) {
+    //     alert("Your cart is empty! Please add items before proceeding.");
+    //     return;
+    //   }
+
+    //   this.loading2 = true; // Show loading animation
+
+    //   try {
+    //     const auth = getAuth();
+    //     const user = auth.currentUser;
+
+    //     if (!user) {
+    //       alert("You must be logged in to proceed.");
+    //       this.loading = false;
+    //       return;
+    //     }
+
+    //     // Calculate totals
+    //     const subtotal = this.cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    //     const total = subtotal; // Assuming no additional charges for simplicity
+
+    //     // Prepare order data
+    //     const orderData = {
+    //       userId: "walkin_customer",
+    //       cartItems: this.cart.map((item) => ({
+    //         productId: item.id,
+    //         productName: item.name,
+    //         price: item.price,
+    //         quantity: item.quantity,
+    //       })),
+    //       deliveryAddress: this.customerDetails.address,
+    //       estimatedDeliveryDate: new Date().toLocaleString(),
+    //       paymentMethod: "none",
+    //       subtotal,
+    //       total,
+    //       status: "walk-in-order",
+    //       createdAt: new Date(),
+    //     };
+
+    //     // Save order data under autogenerated ID in the Orders collection
+    //     const orderRef = collection(firestore, "Orders");
+    //     const orderDocRef = await addDoc(orderRef, orderData);
+
+    //     // // Save walkin-order under the autogenerated document ID
+    //     // const walkinOrderRef = doc(orderRef, orderDocRef.id, "walkin-order");
+    //     // await setDoc(walkinOrderRef, orderData);
+
+    //     // Save the order ID to session storage
+    //     const orderId = orderDocRef.id;
+    //     sessionStorage.setItem("orderId", orderId);
+    //     // sessionStorage.setItem("orderId", orderDocRef.data);
+
+    //     // Route to payment method page
+    //     this.$router.push("/cashier/payment_method");
+    //   } catch (error) {
+    //     console.error("Error saving order:", error);
+    //     alert("There was an issue saving your order. Please try again.");
+    //   } finally {
+    //     this.loading = false; // Hide loading animation
+    //   }
+    // },
     filterProducts(category) {
       this.searchQuery = '';
       this.filteredProducts = this.products.filter(
@@ -345,6 +444,12 @@ export default {
       ];
       this.loading = false;
     }, 2000); // Simulates 2-second delay
+    const customerName = sessionStorage.getItem('customerFirstName') + " " + sessionStorage.getItem('customerLastName');
+    const customerAddress = sessionStorage.getItem('customerAddress');
+    if (customerName && customerAddress) {
+      this.customerDetails.name = customerName;
+      this.customerDetails.address = customerAddress;
+    }
   },
 };
 </script>

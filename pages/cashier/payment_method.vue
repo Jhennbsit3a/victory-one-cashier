@@ -194,6 +194,7 @@ export default {
     },
     // Fetch order details by UID
     async fetchOrderDetails() {
+        console.log(sessionStorage.getItem("orderId"))
       try {
         if (!this.orderUID.trim()) {
         //   this.invalidOrder = true;
