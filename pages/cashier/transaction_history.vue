@@ -3,75 +3,8 @@
     <v-card>
       <v-card-title>Transaction History</v-card-title>
       <v-data-table :headers="headers" :items="customerOrders" item-value="userId" class="elevation-1" dense>
-        <template #item.actions="{ item }">
-          <v-btn small color="primary" @click="viewDetails(item)">View Orders</v-btn>
-        </template>
       </v-data-table>
     </v-card>
-
-    <!-- Order Details Dialog -->
-    <v-dialog v-model="dialogVisible" max-width="600px">
-      <v-card>
-        <v-card-title>
-          Order Details
-          <v-spacer></v-spacer>
-          <v-btn icon @click="closeDialog">
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-        </v-card-title>
-        <v-card-text>
-          <v-list>
-            <v-list-item>
-              <v-list-item-content>
-                <v-list-item-title><strong>Order ID:</strong> {{ selectedOrder.orderId }}</v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-            <v-list-item v-if="selectedOrder.userFirstName && selectedOrder.userLastName">
-              <v-list-item-content>
-                <v-list-item-title><strong>Customer Name:</strong> {{ selectedOrder.userFirstName }} {{
-                  selectedOrder.userLastName }}</v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-            <v-list-item>
-              <v-list-item-content>
-                <v-list-item-title><strong>Product Name:</strong> {{ selectedOrder.productName }}</v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-            <v-list-item>
-              <v-list-item-content>
-                <v-list-item-title><strong>Quantity:</strong> {{ selectedOrder.Quantity
-                  }}</v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-            <v-list-item>
-              <v-list-item-content>
-                <v-list-item-title><strong>Payment Method:</strong> {{ selectedOrder.paymentMethod
-                  }}</v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-            <v-list-item>
-              <v-list-item-content>
-                <v-list-item-title><strong>Delivery Address:</strong> {{ selectedOrder.deliveryAddress
-                  }}</v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-            <v-list-item>
-              <v-list-item-content>
-                <v-list-item-title><strong>Total:</strong> {{ selectedOrder.total }}</v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-            <v-list-item>
-              <v-list-item-content>
-                <v-list-item-title><strong>Status:</strong> {{ selectedOrder.status }}</v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-          </v-list>
-        </v-card-text>
-        <v-card-actions>
-          <v-btn text @click="closeDialog">Close</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
   </v-container>
 </template>
 
@@ -84,13 +17,11 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Customer Name", value: "customerName" },
         { text: "Order ID", value: "orderId" },
         { text: "Product Name", value: "productName" },
         { text: "Total", value: "total" },
         { text: "Quantity", value: "quantity" },
         { text: "Status", value: "status" },
-        { text: "Actions", value: "actions", sortable: false },
       ],
       orders: [],
       dialogVisible: false,
@@ -132,7 +63,7 @@ export default {
         onSnapshot(ordersQuery, async (ordersSnapshot) => {
         for (const orderDoc of ordersSnapshot.docs) {
             const orderData = orderDoc.data();
-
+            // console.log(orderData)
             // Loop through cartItems
             orderData.cartItems.forEach((item) => {
             // Check the status of the order

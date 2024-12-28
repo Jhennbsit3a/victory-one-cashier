@@ -23,7 +23,6 @@
                 clearable
                 placeholder="Search by product name"
                 @input="searchProducts"
-                :disabled="loading"
               ></v-text-field>
             </v-col>
           </v-row>
@@ -124,7 +123,7 @@
                 <v-progress-circular indeterminate size="24" color="orange" />
               </template>
               <template v-else>
-                Checkout
+                Proceed
               </template>
             </v-btn>
           </div>
@@ -144,7 +143,7 @@
       </v-dialog>
 
       <!-- QR Code Dialog -->
-      <v-dialog v-model="qrCodeDialog" max-width="400px" v-if="qrCodeDialog">
+      <!-- <v-dialog v-model="qrCodeDialog" max-width="400px" v-if="qrCodeDialog">
         <v-card>
           <v-card-title class="headline">Order QR Code</v-card-title>
           <v-card-text>
@@ -159,7 +158,7 @@
             <v-btn @click="goBack" color="green" style="color: white;">Done</v-btn>
           </v-card-actions>
         </v-card>
-      </v-dialog>
+      </v-dialog> -->
     </v-container>
   </v-app>
 </template>
@@ -212,15 +211,15 @@ export default {
       });
 
       onSnapshot(collection(firestore, 'Products'), (snapshot) => {
-  this.products = snapshot.docs.map((doc) => ({
-    id: doc.id,
-    name: doc.data().ProductName, // Map the new productName field
-    productName: doc.data().ProductName, // Add productName field
-    price: doc.data().Price,
-    image: doc.data().Image,
-  }));
-  this.filteredProducts = this.products;
-});
+      this.products = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        name: doc.data().ProductName, // Map the new productName field
+        productName: doc.data().ProductName, // Add productName field
+        price: doc.data().Price,
+        image: doc.data().Image,
+      }));
+      this.filteredProducts = this.products;
+    });
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -232,17 +231,17 @@ export default {
         (product) => product.ProductType === category.ProductType
       );
     },
-    updateQuantity(productId, change) {
-      const product = this.cart.find((item) => item.id === productId);
-      if (product) {
-        product.quantity = Math.max(product.quantity + change, 1);
-      }
-    },
     searchProducts() {
       const query = this.searchQuery.toLowerCase();
       this.filteredProducts = this.products.filter((product) =>
         product.name.toLowerCase().includes(query)
       );
+    },
+    updateQuantity(productId, change) {
+      const product = this.cart.find((item) => item.id === productId);
+      if (product) {
+        product.quantity = Math.max(product.quantity + change, 1);
+      }
     },
     addToCart(product) {
       const existingProduct = this.cart.find((item) => item.id === product.id);
@@ -291,7 +290,7 @@ export default {
 
     this.qrCodeDialog = true; // Trigger dialog to open
 
-    this.$nextTick(() => this.generateQRCode(qrData)); // Generate QR after rendering
+    // this.$nextTick(() => this.generateQRCode(qrData)); // Generate QR after rendering
 
     // Clear the cart
     this.cart = [];
