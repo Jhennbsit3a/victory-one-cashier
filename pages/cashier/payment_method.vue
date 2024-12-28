@@ -1,6 +1,6 @@
 <template>
-  <v-container class="d-flex align-center justify-center" style="height: 100vh;">
-    <v-row justify="space-between">
+  <v-container class="d-flex justify-center" style="height: 100vh;">
+    <v-row justify="space-between" align="start">
       <!-- First Column -->
       <v-col cols="12" md="6">
         <v-card class="elevation-3">
@@ -11,7 +11,7 @@
           <v-card-text>
             <!-- Input Field for UID -->
             <v-text-field
-              label="Enter Order UID"
+              label="Enter Order ID"
               v-model="orderUID"
               outlined
               dense
@@ -157,8 +157,9 @@ export default {
     async fetchOrderDetails() {
       try {
         if (!this.orderUID.trim()) {
-          this.invalidOrder = true;
-          this.orderDetails = null;
+        //   this.invalidOrder = true;
+        //   this.orderDetails = null;
+            this.resetForm()
           return;
         }
 
