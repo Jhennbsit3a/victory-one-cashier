@@ -15,8 +15,8 @@
               v-model="orderUID"
               outlined
               dense
+              :autofocus = "orderUID === ''"
               @change="fetchOrderDetails"
-              autofocus
             ></v-text-field>
             <!-- Reset Button -->
             <v-btn color="primary" class="mt-1 reset-btn" @click="resetForm" fab small>
@@ -111,6 +111,7 @@
                 v-model.number="totalAmount"
                 outlined
                 dense
+                :error="!!errorMessage"
               ></v-text-field>
 
               <v-text-field
@@ -118,15 +119,13 @@
                 v-model.number="cashGiven"
                 outlined
                 dense
+                :error-messages="errorMessage" 
+                :error="!!errorMessage" 
               ></v-text-field>
 
               <v-btn color="primary" class="mt-2" @click="calculateChange">
                 Calculate Change
               </v-btn>
-
-              <v-alert type="success" class="mt-3" v-if="change !== null">
-                Change: {{ change.toFixed(2) }}
-              </v-alert>
             </v-card-text>
           </v-card>
         </v-card>
@@ -148,17 +147,36 @@
             </div>
           </v-card-text>
           <v-card-actions>
-            <v-btn @click="closeGcashDialog" color="green">Done</v-btn>
+            <v-btn @click="gcashPaid" color="green">Done</v-btn>
             <v-btn @click="closeGcashDialog" color="red">Cancel</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
+
+      <!-- Receipt Dialog -->
+      <v-dialog v-model="receiptDialog" max-width="400px">
+        <v-card>
+          <v-card-title class="headline">Receipt</v-card-title>
+          <v-card-text>
+            <div class="receipt" v-if="change !== null">
+              <p><strong>Date:</strong> {{ formattedDate }}</p>
+              <p><strong>Total Amount:</strong> ₱{{ totalAmount.toFixed(2) }}</p>
+              <p><strong>Cash Given:</strong> ₱{{ cashGiven.toFixed(2) }}</p>
+              <p><strong>Change:</strong> ₱{{ change.toFixed(2) }}</p>
+            </div>
+          </v-card-text>
+          <v-card-actions>
+            <v-btn color="green" @click="closeReceiptDialog">Close</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
   </v-container>
 </template>
 
 
 <script>
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc,updateDoc } from "firebase/firestore";
 import { firestore } from "~/plugins/firebase";
 
 
@@ -174,6 +192,8 @@ export default {
       totalAmount: 0,
       cashGiven: 0,
       change: null,
+      receiptDialog: false,
+      errorMessage: "",
     };
   },
   computed: {
@@ -181,20 +201,66 @@ export default {
       // Return true when you want the field to be focused
       // For example, after navigating to this component
       return this.$route.name === 'YourRouteName'
-    }
+    },
+    formattedDate() {
+        const now = new Date(Date.now());
+        const options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
+        const formattedDate = now.toLocaleDateString('en-US', options).replace(',', '');
+        return formattedDate
+    },
   },
   methods: {
     calculateChange() {
-      if (this.cashGiven >= this.totalAmount) {
+      if (this.cashGiven >= this.totalAmount && (this.totalAmount && this.cashGiven !== 0)) {
         this.change = this.cashGiven - this.totalAmount;
+        this.receiptDialog = true; // Open the receipt dialog
+        this.errorMessage = ""
       } else {
-        this.change = null;
-        alert('Insufficient cash provided!');
+        this.errorMessage = "Input field must not 0 value it cannot calculate the value.";
+      }
+    },
+    async closeReceiptDialog() {
+      this.clearCashierData()
+      sessionStorage.clear();
+      try {
+        const orderRef = doc(firestore, "Orders", this.orderUID.trim());
+        // const orderSnap = await getDoc(orderRef);
+        // console.log(orderSnap.data().subtotal)
+        await updateDoc(orderRef, {
+        paymentMethod: "Cash", // Replace "GCash" with the desired new value
+      });
+      this.gcashDialog = false;
+      } catch (error) {
+        console.error("Error fetching order details:", error);
+      }
+    },
+    clearCashierData(){
+      this.receiptDialog = false; // Close the receipt dialog
+      this.totalAmount = 0;
+      this.cashGiven = 0;
+      this.resetForm()
+    },
+    async gcashPaid(){
+      try {
+        const orderRef = doc(firestore, "Orders", this.orderUID.trim());
+        const orderSnap = await getDoc(orderRef);
+        // console.log(orderSnap.data().paymentMethod)
+        if(orderSnap.data().paymentMethod === "GCash"){
+          console.log("You already paid the product through GCASH.");
+          this.clearCashierData()
+        }else{
+          await updateDoc(orderRef, {
+            paymentMethod: "GCash", 
+          });
+          this.clearCashierData()
+        }
+      this.gcashDialog = false;
+      } catch (error) {
+        console.error("Error fetching order details:", error);
       }
     },
     // Fetch order details by UID
     async fetchOrderDetails() {
-        console.log(sessionStorage.getItem("orderId"))
       try {
         if (!this.orderUID.trim()) {
         //   this.invalidOrder = true;
@@ -205,11 +271,12 @@ export default {
 
         const orderRef = doc(firestore, "Orders", this.orderUID.trim());
         const orderSnap = await getDoc(orderRef);
+        // console.log(orderSnap.data().paymentMethod)
 
         if (orderSnap.exists()) {
           this.orderDetails = orderSnap.data(); // Set order details
           this.invalidOrder = false; // Reset invalid flag
-
+          this.totalAmount = this.orderDetails.total;
           // Fetch user details using the userId from the order
           const userRef = doc(firestore, "Users", this.orderDetails.userId);
           const userSnap = await getDoc(userRef);
@@ -244,6 +311,12 @@ export default {
       this.invalidOrder = false;
     },
   },
+  mounted(){
+    // console.log(sessionStorage.getItem("orderId"))
+    const walkinOrderId = sessionStorage.getItem("orderId")? sessionStorage.getItem("orderId"): "";
+    this.orderUID = walkinOrderId;
+    this.fetchOrderDetails()
+  }
 };
 </script>
 
