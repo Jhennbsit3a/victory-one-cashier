@@ -271,7 +271,7 @@ export default {
 
         const orderRef = doc(firestore, "Orders", this.orderUID.trim());
         const orderSnap = await getDoc(orderRef);
-        // console.log(orderSnap.data().paymentMethod)
+        // console.log(orderSnap.data())
 
         if (orderSnap.exists()) {
           this.orderDetails = orderSnap.data(); // Set order details

@@ -10,7 +10,7 @@
 
 
 <script>
-import { collection, query, where, onSnapshot, getDoc, doc } from "firebase/firestore"; // Import necessary Firestore methods
+import { collection, query, where, onSnapshot, getDoc,getDocs, doc } from "firebase/firestore"; // Import necessary Firestore methods
 import { firestore } from "~/plugins/firebase"; // Ensure Firestore is correctly initialized
 
 export default {
@@ -51,6 +51,34 @@ export default {
         onSnapshot(customersQuery, async (customersSnapshot) => {
           const customerOrders = [];
 
+          // Query orders without filtering by userId
+          const additionalOrdersQuery = query(
+            collection(firestore, "Orders"),
+            where("userId", "==", "walkin_customer") // Fetch all shipped or cancelled orders
+          );
+
+          const additionalOrdersSnapshot = await getDocs(additionalOrdersQuery);
+
+          // Collect additional orders data
+          const additionalOrders = additionalOrdersSnapshot.docs.map((doc) => ({
+            ...doc.data(),
+            orderId: doc.id,
+            total: doc.total,
+            status: doc.status
+          }));
+          // Process additionalOrders to extract productName and quantity
+          const processedAdditionalOrders = additionalOrders.map((order) => {
+            return order.cartItems.map((item) => {
+              return {
+                orderId: order.orderId,
+                productName: item.productName || "Unknown Product",
+                quantity: item.quantity || 0,
+                total: order.total,
+                status: order.status
+              };
+            });
+          });
+
           for (const customerDoc of customersSnapshot.docs) {
             const customerData = customerDoc.data();
             const customerName = `${customerData.firstName} ${customerData.lastName}`;
@@ -60,33 +88,34 @@ export default {
               where("userId", "==", customerDoc.id) // Filter orders by customer ID
             );
 
-        onSnapshot(ordersQuery, async (ordersSnapshot) => {
-        for (const orderDoc of ordersSnapshot.docs) {
-            const orderData = orderDoc.data();
-            // console.log(orderData)
-            // Loop through cartItems
-            orderData.cartItems.forEach((item) => {
-            // Check the status of the order
-            if (orderData.status === "Shipped" || orderData.status === "Cancelled") {
-                const order = {
-                orderId: orderDoc.id,
-                customerName,
-                productName: item.productName || "Unknown Products",
-                total: orderData.total || 0,
-                quantity: item.Quantity || "N/A",
-                status: orderData.status || "Pending",
-                };
+            onSnapshot(ordersQuery, (ordersSnapshot) => {
+              for (const orderDoc of ordersSnapshot.docs) {
+                const orderData = orderDoc.data();
 
-                // Push the order only if the status matches the criteria
-                customerOrders.push(order);
-            }
+                orderData.cartItems.forEach((item) => {
+                  if (orderData.status === "Shipped" || orderData.status === "Cancelled") {
+                    const order = {
+                      orderId: orderDoc.id,
+                      customerName,
+                      productName: item.productName || "Unknown Products",
+                      total: orderData.total || 0,
+                      quantity: item.Quantity || "N/A",
+                      status: orderData.status || "Pending",
+                    };
+                    customerOrders.push(order);
+                  }
+                });
+              }
+
+              // Flatten processedAdditionalOrders into a single array
+              const flattenedAdditionalOrders = processedAdditionalOrders.flat();
+
+              // Merge additional orders with customerOrders
+              const allOrders = [...customerOrders, ...flattenedAdditionalOrders];
+
+              // Update the component's data
+              this.customerOrders = [...allOrders];
             });
-        }
-
-  // Update the component's data with a copy of the orders
-  this.customerOrders = [...customerOrders];
-});
-
           }
         });
       } catch (error) {
