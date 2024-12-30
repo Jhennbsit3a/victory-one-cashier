@@ -104,7 +104,7 @@
 <script>
 import { auth, firestore } from '~/plugins/firebase';
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDocs, query, collection, where } from 'firebase/firestore';
 
 export default {
   data() {
@@ -122,37 +122,34 @@ export default {
   },
   methods: {
     async signIn() {
-  if (this.$refs.form.validate()) {
-    this.loading = true;
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, this.email, this.password);
-      const userId = userCredential.user.uid;
+      if (this.$refs.form.validate()) {
+        this.loading = true;
+        try {
+          // Query Firestore to find a user with the matching email and password
+          const usersQuery = query(
+            collection(firestore, "Users"),
+            where("email", "==", this.email),
+            where("password", "==", this.password)
+          );
+          const usersSnapshot = await getDocs(usersQuery);
 
-      // Fetch user role from Firestore
-      const userDocRef = doc(firestore, 'Users', userId);
-      const userDoc = await getDoc(userDocRef);
-
-      if (userDoc.exists()) {
-        const userRole = userDoc.data().role;
-        if (['admin', 'cashier', 'owner', 'dispatcher'].includes(userRole)) {
-          console.log(`Role "${userRole}" is validated. Access granted.`);
-          this.$router.push('/cashier/payment_method');
-        } else {
-          console.log(`Role "${userRole}" is not authorized. Redirecting to no-access page.`);
-          this.$router.push('/no-access');
+          if (!usersSnapshot.empty) {
+            // Get the first matching document (assuming one user per email/password combination)
+            console.log("Login successful. Access granted.");
+            this.$router.push("/cashier/payment_method");
+          } else {
+            // No matching user found
+            console.error("Invalid email or password");
+            alert("Invalid email or password. Please try again.");
+          }
+        } catch (error) {
+          console.error("Error during sign-in:", error);
+          alert("Sign-in failed: " + error.message);
+        } finally {
+          this.loading = false;
         }
-      } else {
-        console.error('User role not found in Firestore');
-        alert('Unable to retrieve user role. Please contact support.');
       }
-    } catch (error) {
-      console.error('Error signing in:', error);
-      alert('Sign-in failed: ' + error.message);
-    } finally {
-      this.loading = false;
-    }
-  }
-},
+    },
     async sendResetEmail() {
       if (this.resetEmail) {
         try {
