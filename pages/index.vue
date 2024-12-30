@@ -138,7 +138,7 @@ export default {
             // Assuming only one user matches the email and password
             const userDoc = usersSnapshot.docs[0];
             const userData = userDoc.data();
-            console.log(userData);
+            // console.log(userData);
 
             const userRole = userData.role;
             if (["admin", "cashier", "owner"].includes(userRole)) {
