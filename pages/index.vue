@@ -105,7 +105,7 @@
 <script>
 import { auth, firestore } from '~/plugins/firebase';
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
-import { doc, getDocs, query, collection, where } from 'firebase/firestore';
+import { doc, getDoc, query, collection, where, getDocs } from 'firebase/firestore';
 
 export default {
   data() {
@@ -122,11 +122,11 @@ export default {
     };
   },
   methods: {
-    async signIn() {
+     async signIn() {
       if (this.$refs.form.validate()) {
         this.loading = true;
         try {
-          // Query Firestore to find a user with the matching email and password
+          // Query Firestore for a user with the provided email and password
           const usersQuery = query(
             collection(firestore, "Users"),
             where("email", "==", this.email),
@@ -135,12 +135,21 @@ export default {
           const usersSnapshot = await getDocs(usersQuery);
 
           if (!usersSnapshot.empty) {
-            // Get the first matching document (assuming one user per email/password combination)
-            console.log("Login successful. Access granted.");
-            this.$router.push("/cashier/payment_method");
+            // Assuming only one user matches the email and password
+            const userDoc = usersSnapshot.docs[0];
+            const userData = userDoc.data();
+            console.log(userData);
+
+            const userRole = userData.role;
+            if (["admin", "cashier", "owner", "dispatcher"].includes(userRole)) {
+              console.log(`Role "${userRole}" is validated. Access granted.`);
+              this.$router.push("/cashier/payment_method");
+            } else {
+              console.log(`Role "${userRole}" is not authorized. Redirecting to no-access page.`);
+              this.$router.push("/no-access");
+            }
           } else {
-            // No matching user found
-            // console.error("Invalid email or password");
+            console.error("Invalid email or password");
             alert("Invalid email or password. Please try again.");
           }
         } catch (error) {
