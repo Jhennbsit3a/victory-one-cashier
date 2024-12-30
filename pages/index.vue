@@ -140,7 +140,7 @@ export default {
             this.$router.push("/cashier/payment_method");
           } else {
             // No matching user found
-            console.error("Invalid email or password");
+            // console.error("Invalid email or password");
             alert("Invalid email or password. Please try again.");
           }
         } catch (error) {
