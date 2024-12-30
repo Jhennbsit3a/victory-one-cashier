@@ -235,14 +235,14 @@ export default {
         const options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
         const formattedDate = now.toLocaleDateString('en-US', options).replace(',', '');
 
-        const auth = getAuth();
-        const user = auth.currentUser;
+        // const auth = getAuth();
+        // const user = auth.currentUser;
 
-        if (!user) {
-          alert("You must be logged in to proceed.");
-          this.loading = false;
-          return;
-        }
+        // if (!user) {
+        //   alert("You must be logged in to proceed.");
+        //   this.loading = false;
+        //   return;
+        // }
         // Calculate totals
         const subtotal = this.cartTotal;
         const total = subtotal; // Assuming no additional charges for simplicity
