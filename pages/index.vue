@@ -141,15 +141,15 @@ export default {
             console.log(userData);
 
             const userRole = userData.role;
-            if (["admin", "cashier", "owner", "dispatcher"].includes(userRole)) {
-              console.log(`Role "${userRole}" is validated. Access granted.`);
+            if (["admin", "cashier", "owner"].includes(userRole)) {
+              // console.log(`Role "${userRole}" is validated. Access granted.`);
               this.$router.push("/cashier/payment_method");
             } else {
               console.log(`Role "${userRole}" is not authorized. Redirecting to no-access page.`);
               this.$router.push("/no-access");
             }
           } else {
-            console.error("Invalid email or password");
+            // console.error("Invalid email or password");
             alert("Invalid email or password. Please try again.");
           }
         } catch (error) {
