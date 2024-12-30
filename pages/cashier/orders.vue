@@ -1,46 +1,61 @@
 <template>
   <v-container>
-          <!-- Separated Total Orders, Income, and Sales -->
-      <v-card-title class="headline text-center">
-        <v-icon class="mr-2" large style="color: white;">mdi-currency-php</v-icon>
-        Sales Overview
-      </v-card-title>
-      <v-row class="ma-5">
-        <v-col cols="12" md="4">
-          <v-card class="elevation-2 statistics-card">
-            <v-card-title class="headline">
-              <v-icon class="mr-2" color="orange" large>mdi-cart-outline</v-icon>
-              Total Orders
-            </v-card-title>
-            <v-card-text class="text-h2">{{ totalOrders }}</v-card-text>
-          </v-card>
-        </v-col>
-  
-        <v-col cols="12" md="4">
-          <v-card class="elevation-2 statistics-card">
-            <v-card-title class="headline">
-              <v-icon class="mr-2" color="teal" large>mdi-cash</v-icon>
-              Total Income
-            </v-card-title>
-            <v-card-text class="text-h2">₱ {{ totalIncome }}</v-card-text>
-          </v-card>
-        </v-col>
-  
-        <v-col cols="12" md="4">
-          <v-card class="elevation-2 statistics-card">
-            <v-card-title class="headline">
-              <v-icon class="mr-2" color="purple" large>mdi-currency-usd</v-icon>
-              Total Sales
-            </v-card-title>
-            <v-card-text class="text-h2">₱ {{ totalSales }}</v-card-text>
-          </v-card>
-        </v-col>
-      </v-row>
+    <!-- Sales Overview Section -->
+    <v-card-title class="headline text-center">
+      <v-icon class="mr-2" large style="color: white;">mdi-currency-php</v-icon>
+      Sales Overview
+    </v-card-title>
+    <v-row class="ma-5">
+      <v-col cols="12" md="4">
+        <v-card class="elevation-2 statistics-card">
+          <v-card-title class="headline">
+            <v-icon class="mr-2" color="orange" large>mdi-cart-outline</v-icon>
+            Total Orders
+          </v-card-title>
+          <v-card-text class="text-h2">{{ totalOrders }}</v-card-text>
+        </v-card>
+      </v-col>
+
+      <v-col cols="12" md="4">
+        <v-card class="elevation-2 statistics-card">
+          <v-card-title class="headline">
+            <v-icon class="mr-2" color="teal" large>mdi-cash</v-icon>
+            Total Income
+          </v-card-title>
+          <v-card-text class="text-h2">₱ {{ totalIncome }}</v-card-text>
+        </v-card>
+      </v-col>
+
+      <v-col cols="12" md="4">
+        <v-card class="elevation-2 statistics-card">
+          <v-card-title class="headline">
+            <v-icon class="mr-2" color="purple" large>mdi-currency-usd</v-icon>
+            Total Sales
+          </v-card-title>
+          <v-card-text class="text-h2">₱ {{ totalSales }}</v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
 
 
+    <!-- Orders Table -->
     <v-card>
       <v-card-title>Orders</v-card-title>
-      <v-data-table :headers="headers" :items="customerOrders" item-value="userId" class="elevation-1" dense>
+      <!-- Search Input -->
+      <v-text-field
+        v-model="searchQuery"
+        label="Search by Order ID or Customer Name"
+        class="mx-4"
+        dense
+        outlined
+      ></v-text-field>
+      <v-data-table
+        :headers="headers"
+        :items="filteredOrders"
+        item-value="userId"
+        class="elevation-1"
+        dense
+      >
         <template #item.actions="{ item }">
           <v-btn small color="primary" @click="viewDetails(item)">View Orders</v-btn>
         </template>
@@ -66,8 +81,7 @@
             </v-list-item>
             <v-list-item>
               <v-list-item-content>
-                <v-list-item-title><strong>Customer Name:</strong> {{ selectedOrder.customerName }} {{
-                  selectedOrder.userLastName }}</v-list-item-title>
+                <v-list-item-title><strong>Customer Name:</strong> {{ selectedOrder.customerName }}</v-list-item-title>
               </v-list-item-content>
             </v-list-item>
             <v-list-item>
@@ -77,20 +91,17 @@
             </v-list-item>
             <v-list-item>
               <v-list-item-content>
-                <v-list-item-title><strong>Quantity:</strong> {{ selectedOrder.quantity
-                  }}</v-list-item-title>
+                <v-list-item-title><strong>Quantity:</strong> {{ selectedOrder.quantity }}</v-list-item-title>
               </v-list-item-content>
             </v-list-item>
             <v-list-item>
               <v-list-item-content>
-                <v-list-item-title><strong>Payment Method:</strong> {{ selectedOrder.paymentMethod
-                  }}</v-list-item-title>
+                <v-list-item-title><strong>Payment Method:</strong> {{ selectedOrder.paymentMethod }}</v-list-item-title>
               </v-list-item-content>
             </v-list-item>
             <v-list-item>
               <v-list-item-content>
-                <v-list-item-title><strong>Delivery Address:</strong> {{ selectedOrder.deliveryAddress
-                  }}</v-list-item-title>
+                <v-list-item-title><strong>Delivery Address:</strong> {{ selectedOrder.deliveryAddress }}</v-list-item-title>
               </v-list-item-content>
             </v-list-item>
             <v-list-item>
@@ -129,20 +140,25 @@ export default {
       orders: [],
       dialogVisible: false,
       selectedOrder: {},
+      searchQuery: "", // Search query for filtering
       customerOrders: [],
         totalOrders: 0,
         totalSales: 0,
         totalIncome: 0, // Data property to hold customer order data
     };
   },
+  computed: {
+    // Filter orders based on search query
+    filteredOrders() {
+      const query = this.searchQuery.toLowerCase();
+      return this.customerOrders.filter(
+        (order) =>
+          order.orderId.toLowerCase().includes(query) ||
+          order.customerFirstName.toLowerCase().includes(query)
+      );
+    },
+  },
   methods: {
-    loadTotalOrders() {
-        // const ordersRef = collection(firestore, 'Orders');
-        // const ordersQuery = query(ordersRef, where('status', '!=', 'Cancelled'));
-        // this.unsubscribeOrders = onSnapshot(ordersQuery, (snapshot) => {
-        //   this.totalOrders = snapshot.size;
-        // });
-      },
       loadTotalSales() {
         const ordersRef = collection(firestore, 'Orders');
         this.unsubscribeSales = onSnapshot(ordersRef, (snapshot) => {
@@ -193,6 +209,7 @@ export default {
           for (const customerDoc of customersSnapshot.docs) {
             const customerData = customerDoc.data();
             const customerName = `${customerData.firstName} ${customerData.lastName}`;
+            const customerFirstName = customerData.firstName
 
             const ordersQuery = query(
               collection(firestore, "Orders"),
@@ -202,6 +219,7 @@ export default {
         onSnapshot(ordersQuery, async (ordersSnapshot) => {
         for (const orderDoc of ordersSnapshot.docs) {
             const orderData = orderDoc.data();
+            // console.table(customerOrders)
             // Loop through cartItems
             orderData.cartItems.forEach((item) => {
             // Check the status of the order
@@ -209,6 +227,7 @@ export default {
                 const order = {
                 orderId: orderDoc.id,
                 customerName: customerName,
+                customerFirstName: customerFirstName,
                 paymentMethod: orderData.paymentMethod,
                 productName: item.productName || "Unknown Products",
                 total: orderData.total || 0,
@@ -248,7 +267,6 @@ export default {
 
   mounted() {
     this.fetchCustomerOrders(); // Fetch customer orders when the component is mounted
-    this.loadTotalOrders();
     this.loadTotalSales();
     this.loadTotalIncome();
   },

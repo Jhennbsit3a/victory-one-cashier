@@ -2,7 +2,23 @@
   <v-container>
     <v-card>
       <v-card-title>Transaction History</v-card-title>
-      <v-data-table :headers="headers" :items="customerOrders" item-value="userId" class="elevation-1" dense>
+      
+      <!-- Search Input -->
+      <v-text-field
+        v-model="searchQuery"
+        label="Search by Order ID"
+        class="mx-4"
+        dense
+        outlined
+      ></v-text-field>
+      
+      <v-data-table
+        :headers="headers"
+        :items="filteredOrders"
+        item-value="userId"
+        class="elevation-1"
+        dense
+      >
       </v-data-table>
     </v-card>
   </v-container>
@@ -10,7 +26,7 @@
 
 
 <script>
-import { collection, query, where, onSnapshot, getDoc,getDocs, doc } from "firebase/firestore"; // Import necessary Firestore methods
+import { collection, query, where, onSnapshot, getDoc,getDocs, doc  } from "firebase/firestore"; // Import necessary Firestore methods
 import { firestore } from "~/plugins/firebase"; // Ensure Firestore is correctly initialized
 
 export default {
@@ -23,13 +39,73 @@ export default {
         { text: "Quantity", value: "quantity" },
         { text: "Status", value: "status" },
       ],
+      searchQuery: "", // For search input
       orders: [],
       dialogVisible: false,
       selectedOrder: {},
       customerOrders: [], // Data property to hold customer order data
     };
   },
+  computed: {
+    // Filter orders based on search query
+    filteredOrders() {
+      if (!this.searchQuery) {
+        return this.customerOrders;
+      }
+      return this.customerOrders.filter((order) =>
+        order.orderId.toLowerCase().includes(this.searchQuery.toLowerCase())
+      );
+    },
+  },
   methods: {
+//     async deleteOrder(orderId) {
+//   try {
+//     // Reference to the Firestore document
+//     const orderRef = doc(firestore, "Orders", orderId);
+
+//     // Delete the document
+//     await deleteDoc(orderRef);
+//     console.log(`Order with ID ${orderId} has been deleted successfully.`);
+//   } catch (error) {
+//     console.error(`Error deleting order with ID ${orderId}:`, error);
+//   }
+// },
+//     async updateQuantityField(documentId) {
+//   try {
+//     // Reference to the Firestore document
+//     const orderRef = doc(firestore, "Orders", documentId);
+
+//     // Fetch the document
+//     const orderSnapshot = await getDoc(orderRef);
+//     if (!orderSnapshot.exists()) {
+//       console.error("Order not found!");
+//       return;
+//     }
+
+//     // Get the document data
+//     const orderData = orderSnapshot.data();
+
+//     // Check if cartItems exists and is an array
+//     if (Array.isArray(orderData.cartItems)) {
+//       // Create a new array with updated keys
+//       const updatedCartItems = orderData.cartItems.map((item) => {
+//         const { quantity, ...rest } = item; // Destructure to remove Quantity
+//         return {
+//           ...rest,
+//           Quantity: quantity || 0, // Rename Quantity to quantity with fallback
+//         };
+//       });
+
+//       // Update the document with the modified cartItems
+//       await updateDoc(orderRef, { cartItems: updatedCartItems });
+//       console.log("Cart items updated successfully!");
+//     } else {
+//       console.error("cartItems is missing or not an array!");
+//     }
+//   } catch (error) {
+//     console.error("Error updating cart items:", error);
+//   }
+// },
     // Fetch product name from Firestore
     async fetchProductName(productID) {
       try {
@@ -51,32 +127,34 @@ export default {
         onSnapshot(customersQuery, async (customersSnapshot) => {
           const customerOrders = [];
 
-          // Query orders without filtering by userId
           const additionalOrdersQuery = query(
             collection(firestore, "Orders"),
-            where("userId", "==", "walkin_customer") // Fetch all shipped or cancelled orders
+            where("userId", "==", "walkin_customer")
           );
 
           const additionalOrdersSnapshot = await getDocs(additionalOrdersQuery);
 
-          // Collect additional orders data
-          const additionalOrders = additionalOrdersSnapshot.docs.map((doc) => ({
-            ...doc.data(),
-            orderId: doc.id,
-            total: doc.total,
-            status: doc.status
-          }));
-          // Process additionalOrders to extract productName and quantity
-          const processedAdditionalOrders = additionalOrders.map((order) => {
-            return order.cartItems.map((item) => {
-              return {
+          const additionalOrders = additionalOrdersSnapshot.docs.map((doc) => {
+            const data = doc.data();
+            return {
+              ...data,
+              orderId: doc.id,
+              total: data.subtotal || 0,
+              status: data.status || "Unknown",
+            };
+          });
+
+          const processedAdditionalOrders = additionalOrders.flatMap((order) => {
+            if (Array.isArray(order.cartItems)) {
+              return order.cartItems.map((item) => ({
                 orderId: order.orderId,
                 productName: item.productName || "Unknown Product",
-                quantity: item.quantity || 0,
+                quantity: item.Quantity || 0,
                 total: order.total,
-                status: order.status
-              };
-            });
+                status: order.status,
+              }));
+            }
+            return [];
           });
 
           for (const customerDoc of customersSnapshot.docs) {
@@ -85,7 +163,7 @@ export default {
 
             const ordersQuery = query(
               collection(firestore, "Orders"),
-              where("userId", "==", customerDoc.id) // Filter orders by customer ID
+              where("userId", "==", customerDoc.id)
             );
 
             onSnapshot(ordersQuery, (ordersSnapshot) => {
@@ -107,13 +185,10 @@ export default {
                 });
               }
 
-              // Flatten processedAdditionalOrders into a single array
               const flattenedAdditionalOrders = processedAdditionalOrders.flat();
 
-              // Merge additional orders with customerOrders
               const allOrders = [...customerOrders, ...flattenedAdditionalOrders];
 
-              // Update the component's data
               this.customerOrders = [...allOrders];
             });
           }
@@ -135,6 +210,8 @@ export default {
 
   mounted() {
     this.fetchCustomerOrders(); // Fetch customer orders when the component is mounted
+    // this.updateQuantityField("3ZQ6U8vU1viw0Y3fiDGD");
+    // this.deleteOrder("UxgwjhArYBh0uIIZiQEI");
   },
 };
 </script>
