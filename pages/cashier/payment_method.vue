@@ -309,6 +309,7 @@ export default {
       this.orderDetails = null;
       this.userDetails = {};
       this.invalidOrder = false;
+      sessionStorage.clear();
     },
   },
   mounted(){

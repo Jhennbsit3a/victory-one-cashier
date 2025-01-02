@@ -19,14 +19,30 @@
         class="elevation-1"
         dense
       >
+        <template #item.actions="{ item }">
+          <v-btn small color="red" @click="showDeleteDialog(item)" class="white--text">Delete</v-btn>
+        </template>
       </v-data-table>
+
+            <!-- Delete Confirmation Dialog -->
+      <v-dialog v-model="deleteDialogVisible" max-width="400px">
+        <v-card>
+          <v-card-title class="text-h5">Confirm Deletion</v-card-title>
+          <v-card-text>Are you sure you want to delete this order?</v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="blue darken-1" text @click="deleteDialogVisible = false">Cancel</v-btn>
+            <v-btn color="blue darken-1" text @click="confirmDeleteOrder()">Yes</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
     </v-card>
   </v-container>
 </template>
 
 
 <script>
-import { collection, query, where, onSnapshot, getDoc,getDocs, doc  } from "firebase/firestore"; // Import necessary Firestore methods
+import { collection, query, where, onSnapshot, getDoc,getDocs, doc,deleteDoc   } from "firebase/firestore"; // Import necessary Firestore methods
 import { firestore } from "~/plugins/firebase"; // Ensure Firestore is correctly initialized
 
 export default {
@@ -38,12 +54,15 @@ export default {
         { text: "Total", value: "total" },
         { text: "Quantity", value: "quantity" },
         { text: "Status", value: "status" },
+        { text: "Action", value: "actions" },
       ],
       searchQuery: "", // For search input
       orders: [],
       dialogVisible: false,
       selectedOrder: {},
       customerOrders: [], // Data property to hold customer order data
+      deleteDialogVisible: false,
+      itemToDelete: null,
     };
   },
   computed: {
@@ -58,6 +77,25 @@ export default {
     },
   },
   methods: {
+    showDeleteDialog(item) {
+      this.itemToDelete = item;
+      this.deleteDialogVisible = true;
+      console.log(item.orderId)
+    },
+    async confirmDeleteOrder() {
+      try {
+        const orderRef = doc(firestore, "Orders", this.itemToDelete.orderId);
+        await deleteDoc(orderRef);
+        // console.log(`Order with ID ${this.itemToDelete.orderId} has been deleted successfully`);
+
+        // Remove the item from the local state
+        this.customerOrders = this.customerOrders.filter(order => order.orderId !== this.itemToDelete.orderId);
+
+        this.deleteDialogVisible = false;
+      } catch (error) {
+        console.error("Error deleting order:", error);
+      }
+    },
 //     async deleteOrder(orderId) {
 //   try {
 //     // Reference to the Firestore document
@@ -107,18 +145,18 @@ export default {
 //   }
 // },
     // Fetch product name from Firestore
-    async fetchProductName(productID) {
-      try {
-        const productDoc = await getDoc(doc(firestore, "Products", productID)); // Assume Products is the collection name
-        if (productDoc.exists()) {
-          return productDoc.data().productName || "Unknown Product";
-        }
-        return "Unknown Product";
-      } catch (error) {
-        console.error("Error fetching product name:", error);
-        return "Unknown Product";
-      }
-    },
+    // async fetchProductName(productID) {
+    //   try {
+    //     const productDoc = await getDoc(doc(firestore, "Products", productID)); // Assume Products is the collection name
+    //     if (productDoc.exists()) {
+    //       return productDoc.data().productName || "Unknown Product";
+    //     }
+    //     return "Unknown Product";
+    //   } catch (error) {
+    //     console.error("Error fetching product name:", error);
+    //     return "Unknown Product";
+    //   }
+    // },
 
     async fetchCustomerOrders() {
       try {
@@ -169,6 +207,7 @@ export default {
             onSnapshot(ordersQuery, (ordersSnapshot) => {
               for (const orderDoc of ordersSnapshot.docs) {
                 const orderData = orderDoc.data();
+                // console.table(orderData)
 
                 orderData.cartItems.forEach((item) => {
                   if (orderData.status === "Shipped" || orderData.status === "Cancelled") {
