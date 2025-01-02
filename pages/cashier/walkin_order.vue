@@ -58,7 +58,7 @@
     </div>
 
     <!-- Customer Details -->
-    <v-card class="mb-3">
+    <!-- <v-card class="mb-3">
       <v-card-title>
         <h3>Customer Details</h3>
       </v-card-title>
@@ -66,7 +66,7 @@
         <p><strong>Name:</strong> {{ customerDetails.name }}</p>
         <p><strong>Address:</strong> {{ customerDetails.address }}</p>
       </v-card-text>
-    </v-card>
+    </v-card> -->
 
     <!-- Cart List -->
     <v-list>
@@ -100,7 +100,7 @@
                     <span>Quantity:</span>
                     <div class="quantity-control">
                       <v-btn small outlined @click.stop="updateQuantity(item.id, -1)">-</v-btn>
-                      <span class="mx-2">{{ item.quantity }}</span>
+                      <span class="mx-2">{{ item.Quantity }}</span>
                       <v-btn small outlined @click.stop="updateQuantity(item.id, 1)">+</v-btn>
                     </div>
                   </div>
@@ -170,17 +170,16 @@ export default {
       dialog: false, // Confirmation dialog state
       qrCodeDialog: false, // QR Code dialog state
       showDrawer: true,
-      customerDetails: {
-        name: '',
-        address: ''
-      },
     };
   },
   computed: {
-    filteredProducts() {
-      return this.products.filter((product) =>
-        product.name.toLowerCase().includes(this.searchQuery.toLowerCase())
-      );
+    cartTotal() {
+      console.log('Calculating cart total...');
+      return this.cart.reduce((total, item) => {
+        const price = isNaN(parseFloat(item.price)) ? 0 : parseFloat(item.price);
+        console.log(`Item: ${item.name}, Price: ${price}, Quantity: ${item.Quantity}`);
+        return total + price * item.Quantity;
+      }, 0);
     },
   },
   async created() {
@@ -192,34 +191,41 @@ export default {
         }));
       });
       // Displaying firestore Data for checking
-      const ordersRef = collection(firestore, "Orders");
+      // const ordersRef = collection(firestore, "Products");
 
-      try {
-        const querySnapshot = await getDocs(ordersRef);
+      // try {
+      //   const querySnapshot = await getDocs(ordersRef);
         
-        const ordersData = [];
-        querySnapshot.forEach((doc) => {
-          ordersData.push({ id: doc.id, ...doc.data() });
-        });
-        // console.log(ordersData);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
+      //   const ordersData = [];
+      //   querySnapshot.forEach((doc) => {
+      //     ordersData.push({ id: doc.id, ...doc.data() });
+      //   });
+      //   // console.log(ordersData);
+      // } catch (error) {
+      //   console.error("Error fetching data:", error);
+      // }
       // Displaying firestore Data for checking
 
-      onSnapshot(collection(firestore, 'Products'), (snapshot) => {
-      this.products = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        name: doc.data().ProductName, // Map the new productName field
-        productName: doc.data().ProductName, // Add productName field
-        price: doc.data().Price,
-        image: doc.data().Image,
-      }));
+    onSnapshot(collection(firestore, 'Products'), (snapshot) => {
+      this.products = snapshot.docs.map((doc) => {
+        const rawData = doc.data();
+        // console.log('Raw product data:', rawData);
+        const price = parseFloat(rawData.Price);
+        // console.log('Parsed price:', price);
+        return {
+          id: doc.id,
+          name: rawData.ProductName,
+          productName: rawData.ProductName,
+          price: price,
+          image: rawData.Image,
+        };
+      });
+      // console.log('Processed products:', this.products);
       this.filteredProducts = this.products;
     });
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
   },
   methods: {
     async proceedToPayment() {
@@ -231,9 +237,9 @@ export default {
       this.loading2 = true; // Show loading animation
 
       try {
-        const now = new Date(Date.now());
-        const options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
-        const formattedDate = now.toLocaleDateString('en-US', options).replace(',', '');
+        // const now = new Date(Date.now());
+        // const options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
+        // const formattedDate = now.toLocaleDateString('en-US', options).replace(',', '');
 
         // const auth = getAuth();
         // const user = auth.currentUser;
@@ -247,18 +253,16 @@ export default {
         const subtotal = this.cartTotal;
         const total = subtotal; // Assuming no additional charges for simplicity
 
-        // Prepare customer data
-        const customerData = {
-          firstName: sessionStorage.getItem('customerFirstName'),
-          lastName: sessionStorage.getItem('customerLastName'),
-          role: "customer", // Assign the role
-        };
+        // // Prepare customer data
+        // const customerData = {
+        //   firstName: sessionStorage.getItem('customerFirstName'),
+        //   lastName: sessionStorage.getItem('customerLastName'),
+        //   role: "customer", // Assign the role
+        // };
         // Prepare order data
         const orderData = {
           userId: "walkin_customer",
           cartItems: this.cart,
-          deliveryAddress: this.customerDetails.address,
-          estimatedDeliveryDate: formattedDate,
           paymentMethod: "Not yet Paid",
           subtotal: subtotal,
           total: total,
@@ -269,8 +273,8 @@ export default {
         // Save order data under autogenerated ID in the Orders collection
         const orderRef = collection(firestore, "Orders");
         const orderDocRef = await addDoc(orderRef, orderData);
-        const usersRef2 = collection(firestore, "Users");
-        const userDocRef2 = await addDoc(usersRef2, customerData);
+        // const usersRef2 = collection(firestore, "Users");
+        // const userDocRef2 = await addDoc(usersRef2, customerData);
 
         // // Save walkin-order under the autogenerated document ID
         // const walkinOrderRef = doc(orderRef, orderDocRef.id, "walkin-order");
@@ -305,16 +309,24 @@ export default {
     updateQuantity(productId, change) {
       const product = this.cart.find((item) => item.id === productId);
       if (product) {
-        product.quantity = Math.max(product.quantity + change, 1);
+        product.Quantity = Math.max(product.Quantity + change, 1);
       }
     },
     addToCart(product) {
+      console.log('Adding to cart:', product);
       const existingProduct = this.cart.find((item) => item.id === product.id);
       if (existingProduct) {
         existingProduct.quantity += 1;
       } else {
-        this.cart.push({ ...product, Quantity: 1 });
+        const cartItem = {
+          ...product,
+          Quantity: 1,
+          price: parseFloat(product.price)
+        };
+        // console.log('CartItem before push:', cartItem);
+        this.cart.push(cartItem);
       }
+      // console.log('Updated cart:', this.cart);
     },
     removeFromCart(productId) {
       this.cart = this.cart.filter((item) => item.id !== productId);
@@ -386,11 +398,6 @@ export default {
     },
     goBack() {
       this.qrCodeDialog = false; // Close QR Code dialog
-    },
-  },
-  computed: {
-    cartTotal() {
-      return this.cart.reduce((total, item) => total + item.price * item.quantity, 0);
     },
   },
   mounted() {
