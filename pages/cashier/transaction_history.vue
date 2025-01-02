@@ -28,7 +28,7 @@
       <v-dialog v-model="deleteDialogVisible" max-width="400px">
         <v-card>
           <v-card-title class="text-h5">Confirm Deletion</v-card-title>
-          <v-card-text>Are you sure you want to delete this order?</v-card-text>
+          <v-card-text>Are you sure you want to delete this order together?</v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn color="blue darken-1" text @click="deleteDialogVisible = false">Cancel</v-btn>
@@ -80,7 +80,7 @@ export default {
     showDeleteDialog(item) {
       this.itemToDelete = item;
       this.deleteDialogVisible = true;
-      console.log(item.orderId)
+      // console.log(item.orderId)
     },
     async confirmDeleteOrder() {
       try {

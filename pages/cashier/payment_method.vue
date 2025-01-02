@@ -216,20 +216,19 @@ export default {
         this.receiptDialog = true; // Open the receipt dialog
         this.errorMessage = ""
       } else {
-        this.errorMessage = "Input field must not 0 value it cannot calculate the value.";
+        this.errorMessage = "Input field must not 0 or less than to total amount value";
       }
     },
     async closeReceiptDialog() {
-      this.clearCashierData()
-      sessionStorage.clear();
       try {
         const orderRef = doc(firestore, "Orders", this.orderUID.trim());
-        // const orderSnap = await getDoc(orderRef);
-        // console.log(orderSnap.data().subtotal)
+          
         await updateDoc(orderRef, {
-        paymentMethod: "Cash", // Replace "GCash" with the desired new value
-      });
-      this.gcashDialog = false;
+            paymentMethod: "Cash", 
+          });
+          this.clearCashierData()
+          sessionStorage.clear();
+          this.gcashDialog = false;
       } catch (error) {
         console.error("Error fetching order details:", error);
       }
@@ -246,7 +245,7 @@ export default {
         const orderSnap = await getDoc(orderRef);
         // console.log(orderSnap.data().paymentMethod)
         if(orderSnap.data().paymentMethod === "GCash"){
-          console.log("You already paid the product through GCASH.");
+          // console.log("You already paid the product through GCASH.");
           this.clearCashierData()
         }else{
           await updateDoc(orderRef, {

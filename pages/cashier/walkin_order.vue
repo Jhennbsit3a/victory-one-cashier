@@ -316,7 +316,7 @@ export default {
       // console.log('Adding to cart:', product);
       const existingProduct = this.cart.find((item) => item.id === product.id);
       if (existingProduct) {
-        existingProduct.quantity += 1;
+        existingProduct.Quantity += 1;
       } else {
         const cartItem = {
           ...product,
@@ -347,7 +347,7 @@ export default {
         id: item.id,
         productName: item.productName, // Use `productName` instead of `name`
         price: item.price,
-        quantity: item.quantity,
+        quantity: item.Quantity,
       })),
       deliveryAddress: '123 Main Street, City', // Replace with the actual delivery address
       paymentMethod: 'Cash on Delivery', // Replace with the actual payment method
