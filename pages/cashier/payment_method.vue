@@ -15,7 +15,8 @@
               v-model="orderUID"
               outlined
               dense
-              :autofocus = "orderUID === ''"
+              autofocus
+              ref="orderUIDField"
               @change="fetchOrderDetails"
             ></v-text-field>
             <!-- Reset Button -->
@@ -304,11 +305,16 @@ export default {
     // Reset form fields
     resetForm() {
       this.scannedData = "";
-      this.orderUID = "";
+      this.orderUID = '';
       this.orderDetails = null;
       this.userDetails = {};
       this.invalidOrder = false;
       sessionStorage.clear();
+
+      // Focus on the input field after resetting
+      this.$nextTick(() => {
+        this.$refs.orderUIDField.focus();
+      });
     },
   },
   mounted(){
