@@ -163,7 +163,7 @@
   <!-- Receipt Dialog -->
   <v-dialog v-model="receiptDialog" max-width="400px">
     <v-card>
-      <v-card-text class="receipt-container">
+      <v-card-text class="receipt-container" id="receipt-content">
         <!-- Receipt Header -->
         <div class="receipt-header text-center pt-5">
           <h3 class="company-name">VICTORY ONE</h3>
@@ -222,7 +222,14 @@
       </v-card-text>
 
       <v-card-actions>
-        <v-btn color="green" block @click="closeReceiptDialog">Close</v-btn>
+        <v-row class="w-100" dense>
+          <v-col cols="6">
+            <v-btn color="green" block @click="closeReceiptDialog">Close</v-btn>
+          </v-col>
+          <v-col cols="6">
+            <v-btn color="blue" block @click="saveReceiptAsImage">Save as Image</v-btn>
+          </v-col>
+        </v-row>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -234,12 +241,12 @@
 <script>
 import { doc, getDoc,updateDoc } from "firebase/firestore";
 import { firestore } from "~/plugins/firebase";
-
+import html2canvas from "html2canvas";
 
 export default {
   data() {
     return {
-      receiptId: "00123456", // Example receipt ID
+      receiptId: '', // Example receipt ID
       payment:"",
       scannedData: "", // Scanned data from QR scanner
       orderUID: "", // UID input
@@ -268,8 +275,29 @@ export default {
     },
   },
   methods: {
+    generateReceiptId() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      // const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+
+      this.receiptId = `${year}${month}${day}${minutes}${seconds}`;
+    },
+    saveReceiptAsImage() {
+      const receiptElement = document.getElementById("receipt-content");
+      html2canvas(receiptElement).then((canvas) => {
+        const link = document.createElement("a");
+        link.href = canvas.toDataURL("image/png");
+        link.download = `receipt-${this.receiptId}`;
+        link.click();
+      });
+    },
     calculateChange() {
       if (this.cashGiven >= this.totalAmount && (this.totalAmount && this.cashGiven !== 0)) {
+        this.generateReceiptId()
         this.change = this.cashGiven - this.totalAmount;
         this.receiptDialog = true; // Open the receipt dialog
         this.errorMessage = ""
