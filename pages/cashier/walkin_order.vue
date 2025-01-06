@@ -51,7 +51,7 @@
         <!-- Vertical Divider -->
         <v-divider v-if="cart.length > 0" vertical class="vertical-divider"></v-divider>
   <!-- Cart Section -->
-  <v-col v-if="cart.length > 0" cols="4">
+  <v-col v-if="cart.length > 0" cols="4" class="sticky-cart">
     <div class="header-container text-center">
       <h2>PRODUCT CHECK OUT</h2>
       <v-divider class="header-divider"></v-divider>
@@ -135,7 +135,7 @@
           <v-progress-circular indeterminate size="24" color="orange" />
         </template>
         <template v-else>
-          Proceed
+          Continue to Payment
         </template>
       </v-btn>
     </div>
@@ -423,6 +423,14 @@ export default {
 
 <style scoped>
 /* Add your styles here */
+.sticky-cart {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 50px; /* Set the offset distance from the top of the viewport */
+  z-index: 10;
+  max-height: calc(100vh - 60px); /* Ensure it does not overflow */
+  overflow-y: auto;
+}
 
 .qr-description {
   margin-top: 10px;
