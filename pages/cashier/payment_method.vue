@@ -89,14 +89,20 @@
       <!-- Second Column -->
       <!-- Second Column -->
       <v-col cols="12" md="6">
-        <v-card class="pa-16 elevation-3">
-          <v-card-title>
-            <h3>Payment Method</h3>
-          </v-card-title>
+        <v-card class="pa-10 elevation-3">
+            <div class="text-center pa-3">
+              <h2>Payment Method</h2>
+            </div>
           <!-- GCASH -->
           <v-card class="elevation-3 hover-card cursor-pointer" @click="openGcashDialog">
             <v-card-title>
-              <h3>GCASH</h3>
+              <v-img 
+                    :src="require('@/assets/gcash-logo.png')"
+                    alt="Gcash logo"
+                    max-height="50"
+                    max-width="50"
+                    ></v-img>
+              <h3 class="ps-3">GCASH</h3>
             </v-card-title>
           </v-card>
 
@@ -154,23 +160,72 @@
         </v-card>
       </v-dialog>
 
-      <!-- Receipt Dialog -->
-      <v-dialog v-model="receiptDialog" max-width="400px">
-        <v-card>
-          <v-card-title class="headline">Receipt</v-card-title>
-          <v-card-text>
-            <div class="receipt" v-if="change !== null">
-              <p><strong>Date:</strong> {{ formattedDate }}</p>
-              <p><strong>Total Amount:</strong> ₱{{ totalAmount.toFixed(2) }}</p>
-              <p><strong>Cash Given:</strong> ₱{{ cashGiven.toFixed(2) }}</p>
-              <p><strong>Change:</strong> ₱{{ change.toFixed(2) }}</p>
-            </div>
-          </v-card-text>
-          <v-card-actions>
-            <v-btn color="green" @click="closeReceiptDialog">Close</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
+  <!-- Receipt Dialog -->
+  <v-dialog v-model="receiptDialog" max-width="400px">
+    <v-card>
+      <v-card-text class="receipt-container">
+        <!-- Receipt Header -->
+        <div class="receipt-header text-center pt-5">
+          <h3 class="company-name">VICTORY ONE</h3>
+          <p class="company-description">San Matias, San Fernando, Pampanga</p>
+          <p class="receipt-divider">----------------------------------------</p>
+        </div>
+
+        <!-- Receipt Body -->
+        <div class="receipt-body">
+          <p><strong>Date:</strong> {{ formattedDate }}</p>
+          <p><strong>Receipt ID:</strong> {{ receiptId }}</p>
+          <p class="receipt-divider">----------------------------------------</p>
+
+          <!-- Product Information -->
+          <div v-if="orderDetails">
+            <h4>Order Details:</h4>
+            <v-simple-table>
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Qty</th>
+                  <th>Price</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(item, index) in orderDetails.cartItems" :key="index">
+                  <td>{{ item.productName }}</td>
+                  <td>{{ item.Quantity }}</td>
+                  <td>₱{{ orderDetails.total }}</td>
+                </tr>
+              </tbody>
+            </v-simple-table>
+          </div>
+
+          <p class="receipt-divider">----------------------------------------</p>
+          <p v-if="orderDetails">
+            <strong>Payment Method:</strong> {{ payment }}
+          </p>
+          <p v-if="totalAmount !== null">
+            <strong>Total Amount:</strong> ₱{{ totalAmount.toFixed(2) }}
+          </p>
+          <p v-if="cashGiven !== null">
+            <strong>Cash Given:</strong> ₱{{ cashGiven.toFixed(2) }}
+          </p>
+          <p v-if="change !== null">
+            <strong>Change:</strong> ₱{{ change.toFixed(2) }}
+          </p>
+          <p class="receipt-divider">----------------------------------------</p>
+        </div>
+
+        <!-- Receipt Footer -->
+        <div class="receipt-footer text-center">
+          <p>Thank you for shopping with us!</p>
+          <p>Visit Again!</p>
+        </div>
+      </v-card-text>
+
+      <v-card-actions>
+        <v-btn color="green" block @click="closeReceiptDialog">Close</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 
   </v-container>
 </template>
@@ -184,6 +239,8 @@ import { firestore } from "~/plugins/firebase";
 export default {
   data() {
     return {
+      receiptId: "00123456", // Example receipt ID
+      payment:"",
       scannedData: "", // Scanned data from QR scanner
       orderUID: "", // UID input
       orderDetails: null, // Fetched order details
@@ -216,6 +273,7 @@ export default {
         this.change = this.cashGiven - this.totalAmount;
         this.receiptDialog = true; // Open the receipt dialog
         this.errorMessage = ""
+        this.payment = "Cash"
       } else {
         this.errorMessage = "Input field must not 0 or less than to total amount value";
       }
@@ -381,5 +439,46 @@ export default {
 .gcash-description {
   font-size: 1.2rem;
   color: #444;
+}
+/* Receipt Container Styling */
+.receipt-container {
+  background-color: white;
+  padding: 20px;
+  font-family: "Courier New", Courier, monospace;
+  border: 1px solid #ccc;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+/* Header Styling */
+.receipt-header {
+  margin-bottom: 10px;
+}
+.company-name {
+  font-size: 18px;
+  font-weight: bold;
+}
+.company-description {
+  font-size: 14px;
+  color: gray;
+}
+.receipt-divider {
+  text-align: center;
+  font-family: "Courier New", monospace;
+  margin: 5px 0;
+  color: #aaa;
+}
+
+/* Body Styling */
+.receipt-body p {
+  margin: 5px 0;
+}
+
+/* Footer Styling */
+.receipt-footer {
+  margin-top: 10px;
+  font-size: 14px;
+  text-align: center;
+  color: gray;
 }
 </style>
