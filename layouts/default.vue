@@ -1,49 +1,23 @@
 <template>
   <v-app>
-    <!-- App Bar -->
-    <v-app-bar v-if="showDrawer" app style="background-color: #333; color: black;" color="white">
-      <v-app-bar-nav-icon @click.stop="drawer = !drawer" style="color: black;"></v-app-bar-nav-icon>
-      <v-toolbar-title>Cashier POS</v-toolbar-title>
-    </v-app-bar>
-
-    <!-- Navigation Drawer -->
-    <v-navigation-drawer v-if="showDrawer" v-model="drawer" :mini-variant="miniVariant" :clipped="clipped" fixed app
-      style="background-color: white;">
-      <!-- Drawer Header -->
-      <v-img
-      :src="require('@/assets/logo 3.png')"
-      alt="Gcash logo"
-      max-height="500"
-      max-width="500"
-      ></v-img>
-      <v-divider></v-divider>
-              <!-- Navigation Items -->
-        <v-list>
-          <v-list-item v-for="(item, i) in filteredItems" :key="i" :to="item.to" router exact style="color: black;">
-            <v-list-item-action>
-              <v-icon style="color: black;">{{ item.icon }}</v-icon>
-            </v-list-item-action>
-            <v-list-item-content>
-              <v-list-item-title>{{ item.title }}</v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
-        </v-list>
-      <!-- Logout Button -->
-      <v-list>
-        <v-list-item>
-          <v-btn block color="error" dark @click="showLogoutDialog = true">
-            <v-icon left>mdi-logout</v-icon>
-            Logout
-          </v-btn>
-        </v-list-item>
-      </v-list>
-    </v-navigation-drawer>
-
-    <!-- Navigation Drawer -->
-    <!-- <v-navigation-drawer v-if="showDrawer" v-model="drawer2" :mini-variant="miniVariant" :clipped="clipped" fixed app
-      style="background-color: white;" right>
-      <cart_summary/>
-    </v-navigation-drawer> -->
+    <!-- Navigation Bar -->
+    <v-container v-if="showDrawer" fluid class="nav-bar" style="background-color: #f4f4f4; padding: 10px; text-align: center;">
+      <v-btn
+        v-for="(item, i) in filteredItems"
+        :key="i"
+        :to="item.to"
+        router
+        text
+        class="nav-btn"
+        style="margin: 0 10px; background-color: #333; color: white;"
+      >
+        <v-icon left>{{ item.icon }}</v-icon>
+        {{ item.title }}
+      </v-btn>
+      <v-btn color="error" dark @click="showLogoutDialog = true" style="float: right; margin-left: auto;">
+        <v-icon left>mdi-logout</v-icon>Logout
+      </v-btn>
+    </v-container>
 
     <!-- Main Content -->
     <v-main>
@@ -51,7 +25,8 @@
         <Nuxt />
       </v-container>
     </v-main>
-        <!-- Logout Confirmation Dialog -->
+
+    <!-- Logout Confirmation Dialog -->
     <v-dialog v-model="showLogoutDialog" max-width="400px">
       <v-card>
         <v-card-title class="headline">Confirm Logout</v-card-title>
@@ -75,17 +50,14 @@ export default {
   name: 'DefaultLayout',
   data() {
     return {
+      showDrawer: false,
       showLogoutDialog: false,
-      clipped: false,
-      drawer: true,
-      miniVariant: false,
-      showDrawer: true,
-      userRole: null, // Add a property to store the user role
+      userRole: null,
       items: [
-        { icon: 'mdi-credit-card', title: 'Cashier', to: '/cashier/payment_method', },
-        { icon: 'mdi-view-dashboard', title: 'Walk-in Order', to: '/cashier/walkin_order',},
-        { icon: 'mdi-account-group', title: 'Orders', to: '/cashier/orders',},
-        { icon: 'mdi-swap-horizontal', title: 'Transaction', to: '/cashier/transaction_history', },
+        { icon: 'mdi-credit-card', title: 'Cashier', to: '/cashier/payment_method' },
+        { icon: 'mdi-view-dashboard', title: 'Walk-in Order', to: '/cashier/walkin_order' },
+        { icon: 'mdi-account-group', title: 'Orders', to: '/cashier/orders' },
+        { icon: 'mdi-swap-horizontal', title: 'Transaction', to: '/cashier/transaction_history' },
       ],
       showDrawerOnRoutes: [
         '/cashier/orders',
@@ -102,7 +74,6 @@ export default {
   },
   mounted() {
     this.fetchUserRole(); // Fetch user role on mount
-    this.checkDrawerVisibility(this.$route.path);
   },
   methods: {
     async fetchUserRole() {
@@ -112,7 +83,6 @@ export default {
           const userDoc = await getDoc(userDocRef);
           if (userDoc.exists()) {
             this.userRole = userDoc.data().role;
-            // console.log(User role fetched: ${this.userRole}); // Log the role for confirmation
           } else {
             console.error('User role not found in Firestore');
           }
@@ -123,7 +93,6 @@ export default {
       this.showDrawer = this.showDrawerOnRoutes.includes(path);
     },
     async confirmLogout() {
-      // Perform logout and close the dialog
       try {
         await auth.signOut();
         console.log('User has successfully logged out.');
@@ -134,39 +103,34 @@ export default {
         this.showLogoutDialog = false;
       }
     },
-    // async logout() {
-    //   try {
-    //     await auth.signOut();
-    //     console.log("User has successfully logged out.");
-    //     this.$router.replace('/');
-    //   } catch (error) {
-    //     console.error("Error logging out:", error);
-    //   }
-    // }
   },
   computed: {
     filteredItems() {
       // Filter items based on user role
-      return this.items.filter(item => !item.roles || item.roles.includes(this.userRole));
-    }
-  }
+      return this.items.filter((item) => !item.roles || item.roles.includes(this.userRole));
+    },
+  },
 };
 </script>
 
 <style scoped>
-.logout-button {
-  padding: 10px;
-  margin: 0;
+.nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.logout-button .v-btn {
-  margin: 0 auto;
-  width: calc(100% - 16px);
-  /* Responsive spacing */
+.nav-btn {
+  border-radius: 8px;
+  text-transform: uppercase;
 }
 
-.v-navigation-drawer {
-  max-width: 300px;
-  /* Ensure responsiveness */
+.v-main {
+  margin-top: 20px;
+  padding: 20px;
+}
+
+.v-dialog .v-card {
+  border-radius: 12px;
 }
 </style>
