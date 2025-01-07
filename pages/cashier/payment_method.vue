@@ -122,6 +122,7 @@
               ></v-text-field>
 
               <v-text-field
+                v-if="cashGiven !== null"
                 label="Cash Given"
                 v-model.number="cashGiven"
                 outlined
