@@ -132,7 +132,7 @@
               ></v-text-field>
 
               <v-btn color="primary" class="mt-2" @click="calculateChange">
-                Calculate Change
+                Pay now
               </v-btn>
             </v-card-text>
           </v-card>
@@ -203,13 +203,13 @@
           <p v-if="orderDetails">
             <strong>Payment Method:</strong> {{ payment }}
           </p>
-          <p v-if="totalAmount !== null">
+          <p v-if="totalAmount !== null && totalAmount !== 0">
             <strong>Total Amount:</strong> ₱{{ totalAmount.toFixed(2) }}
           </p>
-          <p v-if="cashGiven !== null">
+          <p v-if="cashGiven !== null && cashGiven !== 0">
             <strong>Cash Given:</strong> ₱{{ cashGiven.toFixed(2) }}
           </p>
-          <p v-if="change !== null">
+          <p v-if="change !== null && change !== 0">
             <strong>Change:</strong> ₱{{ change.toFixed(2) }}
           </p>
           <p class="receipt-divider">----------------------------------------</p>
@@ -307,16 +307,33 @@ export default {
         this.errorMessage = "Input field must not 0 or less than to total amount value";
       }
     },
+    gcashReceipt() {
+        this.generateReceiptId()
+        // this.change = this.cashGiven - this.totalAmount;
+        this.change = 0;
+        this.cashGiven = 0;
+        this.totalAmount = 0;
+        this.receiptDialog = true; // Open the receipt dialog
+        this.errorMessage = ""
+        this.payment = "GCash"
+    },
     async closeReceiptDialog() {
       try {
+        // console.log(orderSnap.data().paymentMethod)
+
         const orderRef = doc(firestore, "Orders", this.orderUID.trim());
-          
-        await updateDoc(orderRef, {
+        const orderSnap = await getDoc(orderRef);
+        if(orderSnap.data().paymentMethod === "GCash"){
+          this.clearCashierData()
+          sessionStorage.clear();
+        }else{
+          await updateDoc(orderRef, {
             paymentMethod: "Cash", 
           });
           this.clearCashierData()
           sessionStorage.clear();
           this.gcashDialog = false;
+        }
       } catch (error) {
         console.error("Error fetching order details:", error);
       }
@@ -339,7 +356,9 @@ export default {
           await updateDoc(orderRef, {
             paymentMethod: "GCash", 
           });
-          this.clearCashierData()
+          // this.clearCashierData()
+          // this.calculateChange()
+          this.gcashReceipt()
         }
       this.gcashDialog = false;
       } catch (error) {
