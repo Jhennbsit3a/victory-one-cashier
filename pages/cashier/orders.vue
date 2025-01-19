@@ -44,7 +44,7 @@
       <!-- Search Input -->
       <v-text-field
         v-model="searchQuery"
-        label="Search by Order ID or Customer Name"
+        label="Search by Order ID"
         class="mx-4"
         dense
         outlined
@@ -135,7 +135,8 @@ export default {
       headers: [
         { text: "Order ID", value: "orderId" },
         { text: "Date", value: "estimatedDeliveryDate" },
-        { text: "Actions", value: "actions", sortable: false },
+        { text: "Status", value: "status" },
+        { text: "Actions", value: "actions", sortable: true },
       ],
       orders: [],
       dialogVisible: false,

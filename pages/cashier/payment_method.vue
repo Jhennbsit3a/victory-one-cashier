@@ -5,7 +5,7 @@
       <v-col cols="12" md="6">
         <v-card class="elevation-3">
           <v-card-title class="headline text-center">
-            Order ID Details
+            Search Order
           </v-card-title>
 
           <v-card-text>

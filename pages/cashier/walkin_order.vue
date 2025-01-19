@@ -409,7 +409,7 @@ export default {
         { id: 3, name: "Product 3", price: 300, image: "image3.jpg" },
       ];
       this.loading = false;
-    }, 3000); // Simulates 2-second delay
+    }, 4000); // Simulates 2-second delay
     const customerName = sessionStorage.getItem('customerFirstName') + " " + sessionStorage.getItem('customerLastName');
     const customerAddress = sessionStorage.getItem('customerAddress');
     if (customerName && customerAddress) {
