@@ -87,7 +87,6 @@
       </v-col>
 
       <!-- Second Column -->
-      <!-- Second Column -->
       <v-col cols="12" md="6">
         <v-card class="pa-10 elevation-3">
             <div class="text-center pa-3">
@@ -130,6 +129,19 @@
                 :error-messages="errorMessage" 
                 :error="!!errorMessage" 
               ></v-text-field>
+                  <!-- Change Display -->
+              <v-alert v-if="change !== null && cashGiven >= totalAmount" dense>
+                <!-- Change: ₱{{ change.toFixed(2) }} -->
+                <p v-if="totalAmount !== null && totalAmount !== 0">
+                  <strong>Total Amount:</strong> ₱{{ totalAmount.toFixed(2) }}
+                </p>
+                <p v-if="cashGiven !== null && cashGiven !== 0">
+                  <strong>Cash Given:</strong> ₱{{ cashGiven.toFixed(2) }}
+                </p>
+                <p v-if="change !== null && change !== 0">
+                  <strong>Change:</strong> ₱{{ change.toFixed(2) }}
+                </p>
+              </v-alert>
 
               <v-btn color="primary" class="mt-2" @click="calculateChange">
                 Pay now
@@ -268,6 +280,12 @@ export default {
       // For example, after navigating to this component
       return this.$route.name === 'YourRouteName'
     },
+    computedChange() {
+      if (this.cashGiven >= this.totalAmount) {
+        return this.cashGiven - this.totalAmount;
+      }
+      return null;
+    },
     formattedDate() {
         const now = new Date(Date.now());
         const options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
@@ -275,7 +293,15 @@ export default {
         return formattedDate
     },
   },
+  watch:{
+        // Sync computed change to `change` data
+    cashGiven: 'updateChange',
+    totalAmount: 'updateChange',
+  },
   methods: {
+    updateChange() {
+      this.change = this.computedChange;
+    },
     generateReceiptId() {
       const now = new Date();
       const year = now.getFullYear();
