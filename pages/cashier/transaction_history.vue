@@ -210,7 +210,7 @@ export default {
                 // console.table(orderData)
 
                 orderData.cartItems.forEach((item) => {
-                  if (orderData.status === "Shipped" || orderData.status === "Cancelled") {
+                  if (orderData.status === "Completed" || orderData.status === "Cancelled") {
                     const order = {
                       orderId: orderDoc.id,
                       customerName,
