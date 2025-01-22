@@ -82,6 +82,9 @@
             <v-alert v-if="invalidOrder" type="error" class="mt-3" prominent>
               Invalid Order UID or the Order does not exist.
             </v-alert>
+            <v-alert v-if="paid" type="error" class="mt-3" prominent>
+              This order has already been paid and cannot be retrieved.
+            </v-alert>
           </v-card-text>
         </v-card>
       </v-col>
@@ -272,6 +275,7 @@ export default {
       change: null,
       receiptDialog: false,
       errorMessage: "",
+      paid: false
     };
   },
   computed: {
@@ -345,23 +349,34 @@ export default {
     },
     async closeReceiptDialog() {
       try {
-        // console.log(orderSnap.data().paymentMethod)
-
         const orderRef = doc(firestore, "Orders", this.orderUID.trim());
         const orderSnap = await getDoc(orderRef);
-        if(orderSnap.data().paymentMethod === "GCash"){
-          this.clearCashierData()
-          sessionStorage.clear();
-        }else{
+
+        if (orderSnap.exists()) {
+          const orderData = orderSnap.data();
+
+          // Check if the order is already paid
+          if (orderData.paymentMethod === "GCash" || orderData.paymentMethod === "Cash") {
+            console.log("Order has already been paid.");
+            this.clearCashierData();
+            sessionStorage.clear();
+            return;
+          }
+
+          // Update the payment method to Cash
           await updateDoc(orderRef, {
-            paymentMethod: "Cash", 
+            paymentMethod: "Cash",
           });
-          this.clearCashierData()
+
+          console.log("Payment successful with Cash.");
+          this.clearCashierData();
           sessionStorage.clear();
           this.gcashDialog = false;
+        } else {
+          console.error("Order does not exist.");
         }
       } catch (error) {
-        console.error("Error fetching order details:", error);
+        console.error("Error confirming order payment:", error);
       }
     },
     clearCashierData(){
@@ -370,25 +385,35 @@ export default {
       this.cashGiven = 0;
       this.resetForm()
     },
-    async gcashPaid(){
+    async gcashPaid() {
       try {
         const orderRef = doc(firestore, "Orders", this.orderUID.trim());
         const orderSnap = await getDoc(orderRef);
-        // console.log(orderSnap.data().paymentMethod)
-        if(orderSnap.data().paymentMethod === "GCash"){
-          // console.log("You already paid the product through GCASH.");
-          this.clearCashierData()
-        }else{
+
+        if (orderSnap.exists()) {
+          const orderData = orderSnap.data();
+
+          // Check if the order is already paid
+          if (orderData.paymentMethod === "GCash" || orderData.paymentMethod === "Cash") {
+            console.log("Order has already been paid.");
+            this.clearCashierData();
+            return;
+          }
+
+          // Update the payment method to GCash
           await updateDoc(orderRef, {
-            paymentMethod: "GCash", 
+            paymentMethod: "GCash",
           });
-          // this.clearCashierData()
-          // this.calculateChange()
-          this.gcashReceipt()
+
+          console.log("Payment successful through GCash.");
+          this.gcashReceipt();
+        } else {
+          console.error("Order does not exist.");
         }
-      this.gcashDialog = false;
+
+        this.gcashDialog = false;
       } catch (error) {
-        console.error("Error fetching order details:", error);
+        console.error("Error processing payment:", error);
       }
     },
     // Fetch order details by UID
@@ -409,6 +434,15 @@ export default {
           this.orderDetails = orderSnap.data(); // Set order details
           this.invalidOrder = false; // Reset invalid flag
           this.totalAmount = this.orderDetails.total;
+                // Check if the order is already paid
+        if (this.orderDetails.paymentMethod === "GCash" || this.orderDetails.paymentMethod === "Cash") {
+          // console.log("This order has already been paid and cannot be retrieved.");
+          this.orderDetails = null;
+          // this.invalidOrder = true;
+          this.totalAmount = 0;
+          this.paid = true;
+          return;
+        }
           // Fetch user details using the userId from the order
           const userRef = doc(firestore, "Users", this.orderDetails.userId);
           const userSnap = await getDoc(userRef);
