@@ -36,7 +36,7 @@
                 </template>
                 <template v-slot:append>
                   <v-btn icon @click="togglePasswordVisibility">
-                    <v-icon>{{ showPassword ? 'mdi-eye-off' : 'mdi-eye' }}</v-icon>
+                    <v-icon>{{ showPassword ? 'mdi-eye' : 'mdi-eye-off' }}</v-icon>
                   </v-btn>
                 </template>
               </v-text-field>
