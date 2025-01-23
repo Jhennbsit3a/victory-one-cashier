@@ -120,6 +120,7 @@
                 v-model.number="totalAmount"
                 outlined
                 dense
+                :disabled="isFetching"
                 :error="!!errorMessage"
               ></v-text-field>
 
@@ -275,7 +276,8 @@ export default {
       change: null,
       receiptDialog: false,
       errorMessage: "",
-      paid: false
+      paid: false,
+      isFetching: false,
     };
   },
   computed: {
@@ -434,6 +436,7 @@ export default {
           this.orderDetails = orderSnap.data(); // Set order details
           this.invalidOrder = false; // Reset invalid flag
           this.totalAmount = this.orderDetails.total;
+          this.isFetching = true; // Re-enable the text field
                 // Check if the order is already paid
         if (this.orderDetails.paymentMethod === "GCash" || this.orderDetails.paymentMethod === "Cash") {
           // console.log("This order has already been paid and cannot be retrieved.");
@@ -441,6 +444,7 @@ export default {
           // this.invalidOrder = true;
           this.totalAmount = 0;
           this.paid = true;
+          this.isFetching = false; // Re-enable the text field
           return;
         }
           // Fetch user details using the userId from the order

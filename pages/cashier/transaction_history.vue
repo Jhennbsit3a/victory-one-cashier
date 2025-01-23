@@ -108,6 +108,27 @@ export default {
 //     console.error(`Error deleting order with ID ${orderId}:`, error);
 //   }
 // },
+  async deleteOrders(orderIds) {
+    try {
+      if (!Array.isArray(orderIds) || orderIds.length === 0) {
+        console.error("Please provide an array of order IDs to delete.");
+        return;
+      }
+
+      // Use Promise.all to delete multiple orders in parallel
+      await Promise.all(
+        orderIds.map(async (orderId) => {
+          const orderRef = doc(firestore, "Orders", orderId);
+          await deleteDoc(orderRef);
+          console.log(`Order with ID ${orderId} has been deleted successfully.`);
+        })
+      );
+
+      console.log("All specified orders have been deleted successfully.");
+    } catch (error) {
+      console.error("Error deleting orders:", error);
+    }
+  },
 //     async updateQuantityField(documentId) {
 //   try {
 //     // Reference to the Firestore document
@@ -249,8 +270,39 @@ export default {
 
   mounted() {
     this.fetchCustomerOrders(); // Fetch customer orders when the component is mounted
+    // const orderIdsToDelete = [];
+//     const orderData = [
+//   "piXSkYP0HOEcgmodo2DU",
+//   "q5qEy2YIyVuJ8eTaO3EQ",
+//   "qosgt1UzCLgHAGe90nla",
+//   "r1tUApJcsuUXAL31ho7u",
+//   "r4s39h0GYySo9jRMDzRp",
+//   "rQ5dUGbrI39Wdmh9mKas",
+//   "rduuEWnYIzs7y6MhFGFa",
+//   "rk6J0cHqJ0n1rNumoLQN",
+//   "sigA5j59P9hQMBEjVeFX",
+//   "soJ8nLrONMVR6418MW9a",
+//   "tFhU2RCfQqDeIJtkj6sV",
+//   "tGSictvbPtemqD8eEfoX",
+//   "tUDLcW1lnnACkRt1w1rU",
+//   "tfJ4YNswuprdfkLl9C6p",
+//   "toSgvRoo9h1iIgtod3jO",
+//   "tz3mkC0lUi34j34qcwi7",
+//   "uAouYEWqBVw0anvxn9XA",
+//   "ut2J705alQgKL9AowPQq",
+//   "v9FjmMONJpg5uiU4SchD",
+//   "w77XqZK2Fa4kY5CtC0hp",
+//   "wXkw0e5NMzQa0mlVYtRN",
+//   "xXhnDacexccFzzAhNeQD",
+//   "y12K8EovFBNVC3eudAGM",
+//   "z5ZPGhQCsUKEPCm8ej7G",
+//   "zL4WdRAu7ucEpVxqe8X6",
+//   "zWJ0oqG0AKEeUIwqc20X",
+//   "zXOek1auvEHOlRfoLTQ8"
+// ];
+
     // this.updateQuantityField("3ZQ6U8vU1viw0Y3fiDGD");
-    // this.deleteOrder("UxgwjhArYBh0uIIZiQEI");
+    // this.deleteOrders(orderData);
   },
 };
 </script>

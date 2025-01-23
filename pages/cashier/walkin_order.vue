@@ -200,6 +200,8 @@ export default {
         querySnapshot.forEach((doc) => {
           ordersData.push({ id: doc.id, ...doc.data() });
         });
+      const orderIds = ordersData.map(order => order.id);
+      console.log(orderIds);
         // console.log(ordersData);
       } catch (error) {
         console.error("Error fetching data:", error);
