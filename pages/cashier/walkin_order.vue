@@ -191,7 +191,7 @@ export default {
         }));
       });
       // Displaying firestore Data for checking
-      const ordersRef = collection(firestore, "Orders");
+      const ordersRef = collection(firestore, "Users");
 
       try {
         const querySnapshot = await getDocs(ordersRef);
@@ -201,12 +201,37 @@ export default {
           ordersData.push({ id: doc.id, ...doc.data() });
         });
       const orderIds = ordersData.map(order => order.id);
-      console.log(orderIds);
+      // console.table(ordersData);
         // console.log(ordersData);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
       // Displaying firestore Data for checking
+      // Function to add a new user to Firestore
+// const addUser = async () => {
+//   try {
+//     // Reference to the "Users" collection
+//     const usersRef = collection(firestore, "Users");
+
+//     // User data to be added
+//     const newUser = {
+//       firstname: "Admin",
+//       email: "victory.one.admin@gmail.com",
+//       password: "admin123", // Ideally, hash this before storing
+//       role: "admin", // or "Business Owner"
+//       createdAt: serverTimestamp(), // Auto-generate timestamp
+//     };
+
+//     // Add document with auto-generated ID
+//     const docRef = await addDoc(usersRef, newUser);
+//     console.log("User added successfully with ID:", docRef.id);
+//   } catch (error) {
+//     console.error("Error adding user:", error);
+//   }
+// };
+
+// Call the function to add a user
+// addUser();
 
     onSnapshot(collection(firestore, 'Products'), (snapshot) => {
       this.products = snapshot.docs.map((doc) => {
