@@ -209,7 +209,7 @@
                 <tr v-for="(item, index) in orderDetails.cartItems" :key="index">
                   <td>{{ item.productName }}</td>
                   <td>{{ item.Quantity }}</td>
-                  <td>₱{{ orderDetails.total }}</td>
+                  <td>₱{{ item.price }}</td>
                 </tr>
               </tbody>
             </v-simple-table>

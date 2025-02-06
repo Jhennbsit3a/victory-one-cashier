@@ -201,7 +201,7 @@ export default {
           ordersData.push({ id: doc.id, ...doc.data() });
         });
       const orderIds = ordersData.map(order => order.id);
-      console.table(ordersData);
+      // console.table(ordersData);
         // console.log(ordersData);
       } catch (error) {
         console.error("Error fetching data:", error);
