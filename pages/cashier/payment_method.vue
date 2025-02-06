@@ -64,7 +64,7 @@
                   </tr>
                   <tr>
                     <td>Estimated Delivery Date</td>
-                    <td>{{ orderDetails.estimatedDeliveryDate }}</td>
+                    <td v-if="orderDetails.userId !== 'walkin_customer'">{{ orderDetails.estimatedDeliveryDate }}</td>
                   </tr>
                   <tr v-for="(item, index) in orderDetails.cartItems" :key="index">
                     <td>{{ item.productName }}</td>

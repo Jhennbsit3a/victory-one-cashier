@@ -55,6 +55,7 @@ export default {
         { text: "Quantity", value: "quantity" },
         { text: "Status", value: "status" },
         { text: "Action", value: "actions" },
+        { text: "Date", value: "estimatedDeliveryDate" },
       ],
       searchQuery: "", // For search input
       orders: [],
@@ -200,6 +201,7 @@ export default {
               orderId: doc.id,
               total: data.subtotal || 0,
               status: data.status || "Unknown",
+              // estimatedDeliveryDate: data.estimatedDeliveryDate
             };
           });
 
@@ -211,6 +213,7 @@ export default {
                 quantity: item.Quantity || 0,
                 total: order.total,
                 status: order.status,
+                estimatedDeliveryDate: order.estimatedDeliveryDate
               }));
             }
             return [];
@@ -239,6 +242,7 @@ export default {
                       total: orderData.total || 0,
                       quantity: item.Quantity || "N/A",
                       status: orderData.status || "Pending",
+                      estimatedDeliveryDate: orderData.estimatedDeliveryDate
                     };
                     customerOrders.push(order);
                   }
