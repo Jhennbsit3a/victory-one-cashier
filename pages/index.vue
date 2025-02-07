@@ -1,6 +1,24 @@
 <template>
   <v-container class="fill-height d-flex align-center justify-center" fluid>
     <v-row align="center" justify="center">
+        <v-snackbar
+          v-model="snackbar"
+          top
+          elevation="24"
+        >
+          {{ inform }}
+
+          <template v-slot:action="{ attrs }">
+            <v-btn
+              color="pink"
+              text
+              v-bind="attrs"
+              @click="closeInform"
+            >
+              Close
+            </v-btn>
+          </template>
+        </v-snackbar>
       <v-col cols="12" sm="10" md="6" lg="4">
         <v-card class="sign-in-card">
           <v-card-text class="text-center mt-4">
@@ -110,6 +128,8 @@ import { doc, getDoc, query, collection, where, getDocs } from 'firebase/firesto
 export default {
   data() {
     return {
+    snackbar: false,
+    inform: '',
       loading: false,
       valid: false,
       email: '',
@@ -122,6 +142,9 @@ export default {
     };
   },
   methods: {
+      closeInform(){
+      this.snackbar = false
+    },
      async signIn() {
       if (this.$refs.form.validate()) {
         this.loading = true;
@@ -150,11 +173,15 @@ export default {
             }
           } else {
             // console.error("Invalid email or password");
-            alert("Invalid email or password. Please try again.");
+            this.snackbar = true
+            this.inform = " email or password. Please try again."
+            // alert("Invalid email or password. Please try again.");
           }
         } catch (error) {
           console.error("Error during sign-in:", error);
-          alert("Sign-in failed: " + error.message);
+          this.snackbar = true
+          this.inform = " Sign-in failed: " + error.message
+          // alert("Sign-in failed: " + error.message);
         } finally {
           this.loading = false;
         }
@@ -165,13 +192,19 @@ export default {
         try {
           await sendPasswordResetEmail(auth, this.resetEmail);
           this.forgotPasswordDialog = false;
-          alert('Password reset email sent!');
+            this.snackbar = true
+            this.inform = " Password reset email sent!"
+          // alert('Password reset email sent!');
         } catch (error) {
           console.error('Error sending password reset email:', error);
-          alert('Error sending password reset email: ' + error.message);
+            this.snackbar = true
+            this.inform = 'Error sending password reset email: ' + error.message
+          // alert('Error sending password reset email: ' + error.message);
         }
       } else {
-        alert('Please enter your email to reset your password.');
+        this.snackbar = true
+        this.inform = " Please enter your email to reset your password."
+        // alert('Please enter your email to reset your password.');
       }
     },
     togglePasswordVisibility() {

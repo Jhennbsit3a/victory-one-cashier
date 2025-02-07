@@ -2,6 +2,24 @@
   <v-app>
     <v-container class="p-0">
       <v-row>
+      <v-snackbar
+        v-model="snackbar"
+        top
+        elevation="24"
+      >
+        {{ inform }}
+
+        <template v-slot:action="{ attrs }">
+          <v-btn
+            color="pink"
+            text
+            v-bind="attrs"
+            @click="closeInform"
+          >
+            Close
+          </v-btn>
+        </template>
+      </v-snackbar>
         <!-- Products Section -->
         <v-col :cols="cart.length > 0 ? 8 : 12">
           <!-- MAIN PRODUCTS Header -->
@@ -160,6 +178,8 @@ import QRCode from 'qrcode'; // Import QRCode library
 export default {
   data() {
     return {
+      snackbar: false,
+      inform: '',
       products: [],
       filteredProducts: [],
       itemList: [],
@@ -255,9 +275,14 @@ export default {
   }
   },
   methods: {
+       closeInform(){
+      this.snackbar = false
+    },
     async proceedToPayment() {
       if (this.cart.length === 0) {
-        alert("Your cart is empty! Please add items before proceeding.");
+        this.snackbar = true
+        this.inform = "Your cart is empty! Please add items before proceeding."
+        // alert("Your cart is empty! Please add items before proceeding.");
         return;
       }
 
@@ -317,7 +342,9 @@ export default {
         this.$router.push("/cashier/payment_method");
       } catch (error) {
         console.error("Error saving order:", error);
-        alert("There was an issue saving your order. Please try again.");
+               this.snackbar = true
+        this.inform = "There was an issue saving your order. Please try again."
+        // alert("There was an issue saving your order. Please try again.");
       } finally {
         this.loading = false; // Hide loading animation
       }
@@ -361,7 +388,9 @@ export default {
     },
     async checkout() {
   if (this.cart.length === 0) {
-    alert('Your cart is empty! Please add some items to proceed.');
+           this.snackbar = true
+        this.inform = "Your cart is empty! Please add some items to proceed."
+    // alert('Your cart is empty! Please add some items to proceed.');
     return; // Stop the checkout process if the cart is empty
   }
 
