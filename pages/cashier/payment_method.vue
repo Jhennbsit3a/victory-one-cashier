@@ -446,6 +446,8 @@ export default {
           this.paid = true;
           this.isFetching = false; // Re-enable the text field
           return;
+        }else{
+          this.paid = false;
         }
           // Fetch user details using the userId from the order
           const userRef = doc(firestore, "Users", this.orderDetails.userId);
