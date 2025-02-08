@@ -162,16 +162,43 @@
           <v-card-title class="headline">GCash Payment</v-card-title>
           <v-card-text>
             <div class="text-center">
+              <p class="gcash-instruction">
+                Please follow the instructions below before proceeding with the payment:
+              </p>
+              <ol class="gcash-steps">
+                <li>Scan the QR code below using your GCash app.</li>
+                <li>Enter the correct payment amount and complete the transaction.</li>
+                <li>Take a screenshot of the receipt for reference.</li>
+                <li>Enter the **Reference Number**below.</li>
+              </ol>
               <img src="@/assets/Gcash.jpg" alt="GCash Image" class="gcash-image" />
-              <p class="gcash-description">Scan the QR code to pay via GCash.</p>
-            <v-text-field
-            label="Gcash Reference Number"
-            required
-          ></v-text-field>         
+
+              <!-- Input Fields -->
+              <v-text-field 
+                v-model="referenceNumber" 
+                label="Reference Number"
+                outlined
+                dense
+                maxlength="13"
+                type="text"
+                placeholder="Enter 13-digit reference number"
+                @input="validateReferenceNumber"
+              ></v-text-field>
+
+              <!-- <v-text-field 
+                v-model="receiptNumber" 
+                label="GCash Receipt Number" 
+                outlined 
+                dense
+                required
+              ></v-text-field> -->
             </div>
           </v-card-text>
-          <v-card-actions>
-            <v-btn @click="gcashPaid" color="green">Done</v-btn>
+
+          <v-card-actions class="justify-end">
+            <v-btn @click="gcashPaid" color="green" :disabled="!isReferenceValid">
+              Confirm Payment
+            </v-btn>
             <v-btn @click="closeGcashDialog" color="red">Cancel</v-btn>
           </v-card-actions>
         </v-card>
@@ -219,6 +246,9 @@
           <p v-if="orderDetails">
             <strong>Payment Method:</strong> {{ payment }}
           </p>
+          <p v-if="payment === 'GCash'">
+            <strong>Reference Number:</strong> {{ referenceNumber }}
+          </p>
           <p v-if="totalAmount !== null && totalAmount !== 0">
             <strong>Total Amount:</strong> ₱{{ totalAmount.toFixed(2) }}
           </p>
@@ -263,6 +293,9 @@ import html2canvas from "html2canvas";
 export default {
   data() {
     return {
+      referenceNumber: "",      // Stores the GCash reference number
+      // receiptNumber: "",        // Stores the GCash receipt number
+      isReferenceValid: false,  // Controls the "Confirm Payment" button state
       receiptId: '', // Example receipt ID
       payment:"",
       scannedData: "", // Scanned data from QR scanner
@@ -307,6 +340,10 @@ export default {
   methods: {
     updateChange() {
       this.change = this.computedChange;
+    },
+    validateReferenceNumber() {
+      this.referenceNumber = this.referenceNumber.replace(/\D/g, ""); // Remove non-numeric characters
+      this.isReferenceValid = this.referenceNumber.length === 13; // Enable button only if 13 digits
     },
     generateReceiptId() {
       const now = new Date();
@@ -368,6 +405,8 @@ export default {
           // Update the payment method to Cash
           await updateDoc(orderRef, {
             paymentMethod: "Cash",
+            referenceNumber: this.referenceNumber.trim(), // Save reference number
+            // paymentStatus: "Paid", // Optional: Add status for tracking
           });
 
           console.log("Payment successful with Cash.");
@@ -499,6 +538,19 @@ export default {
 </script>
 
 <style scoped>
+.gcash-instructions {
+  font-size: 14px;
+  color: #333;
+  background: #f3f4f6;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  text-align: left;
+  line-height: 1.5;
+}
+.gcash-steps{
+  text-align: left;
+}
 .v-container {
   max-width: 600px;
   margin: 0 auto;
