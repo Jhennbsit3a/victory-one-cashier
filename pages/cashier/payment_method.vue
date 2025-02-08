@@ -274,7 +274,7 @@
             <v-btn color="green" block @click="closeReceiptDialog">Close</v-btn>
           </v-col>
           <v-col cols="6">
-            <v-btn color="blue" block @click="saveReceiptAsImage">Save as Image</v-btn>
+            <v-btn color="blue" block @click="saveReceiptAsPDF">Save as PDF</v-btn>
           </v-col>
         </v-row>
       </v-card-actions>
@@ -288,6 +288,7 @@
 <script>
 import { doc, getDoc,updateDoc } from "firebase/firestore";
 import { firestore } from "~/plugins/firebase";
+import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 
 export default {
@@ -356,15 +357,76 @@ export default {
 
       this.receiptId = `${year}${month}${day}${minutes}${seconds}`;
     },
-    saveReceiptAsImage() {
-      const receiptElement = document.getElementById("receipt-content");
-      html2canvas(receiptElement).then((canvas) => {
-        const link = document.createElement("a");
-        link.href = canvas.toDataURL("image/png");
-        link.download = `receipt-${this.receiptId}`;
-        link.click();
-      });
-    },
+    // saveReceiptAsImage() {
+    //   const receiptElement = document.getElementById("receipt-content");
+    //   html2canvas(receiptElement).then((canvas) => {
+    //     const link = document.createElement("a");
+    //     link.href = canvas.toDataURL("image/png");
+    //     link.download = `receipt-${this.receiptId}`;
+    //     link.click();
+    //   });
+    // },
+    // async saveReceiptAsPDF() {
+    //   const receiptElement = document.getElementById("receipt-content");
+
+    //   if (!receiptElement) {
+    //     console.error("Receipt element not found.");
+    //     return;
+    //   }
+
+    //   try {
+    //     const canvas = await html2canvas(receiptElement, { scale: 2 }); // High quality
+    //     const imgData = canvas.toDataURL("image/png");
+
+    //     // Standard receipt size: 80mm width, dynamic height
+    //     const pdfWidth = 80; // 80mm width (standard)
+    //     const pdfHeight = (canvas.height * pdfWidth) / canvas.width; // Keep aspect ratio
+
+    //     const pdf = new jsPDF("p", "mm", [pdfWidth, pdfHeight]); // Custom size
+
+    //     pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+    //     pdf.save(`receipt-${this.receiptId}.pdf`);
+    //   } catch (error) {
+    //     console.error("Error generating PDF:", error);
+    //   }
+    // },
+    async saveReceiptAsPDF() {
+  const receiptElement = document.getElementById("receipt-content");
+
+  if (!receiptElement) {
+    console.error("Receipt element not found.");
+    return;
+  }
+
+  try {
+    const canvas = await html2canvas(receiptElement, { scale: 2 }); // High quality
+    const imgData = canvas.toDataURL("image/png");
+
+    // Standard receipt size: 80mm width, dynamic height
+    const pdfWidth = 80; // 80mm width (standard)
+    const pdfHeight = (canvas.height * pdfWidth) / canvas.width; // Maintain aspect ratio
+
+    const pdf = new jsPDF("p", "mm", [pdfWidth, pdfHeight]); // Custom size
+
+    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+
+    // Save PDF file
+    const pdfFileName = `receipt-${this.receiptId}.pdf`;
+    pdf.save(pdfFileName);
+
+    // Open print dialog after a short delay (to ensure the file is saved first)
+    setTimeout(() => {
+      const printWindow = window.open(pdf.output("bloburl"), "_blank");
+      if (printWindow) {
+        printWindow.print(); // Trigger print dialog
+      } else {
+        console.error("Failed to open print dialog.");
+      }
+    }, 1000); // Adjust delay if needed
+  } catch (error) {
+    console.error("Error generating PDF:", error);
+  }
+},
     calculateChange() {
       if (this.cashGiven >= this.totalAmount && (this.totalAmount && this.cashGiven !== 0)) {
         this.generateReceiptId()
