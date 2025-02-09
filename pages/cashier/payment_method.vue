@@ -167,9 +167,13 @@
               </p>
               <ol class="gcash-steps">
                 <li>Scan the QR code below using your GCash app.</li>
-                <li>Enter the correct payment amount and complete the transaction.</li>
-                <li>Take a screenshot of the receipt for reference.</li>
-                <li>Enter the **Reference Number**below.</li>
+                <li>Enter the exact payment amount and complete the transaction.</li>
+                <li>Take a screenshot of the transaction receipt for reference.</li>
+                <li>
+                  Look on the <strong>Reference Number</strong> on your GCash receipt.  
+                  This is a 13-digit number usually found in the transaction details.
+                </li>
+                <li>Enter the <strong>Reference Number</strong> in the field below before proceeding.</li>
               </ol>
               <img src="@/assets/Gcash.jpg" alt="GCash Image" class="gcash-image" />
 

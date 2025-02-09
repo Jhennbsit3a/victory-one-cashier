@@ -339,36 +339,26 @@ export default {
 
   mounted() {
     this.fetchCustomerOrders(); // Fetch customer orders when the component is mounted
-    // const orderIdsToDelete = [];
-//     const orderData = [
-//   "piXSkYP0HOEcgmodo2DU",
-//   "q5qEy2YIyVuJ8eTaO3EQ",
-//   "qosgt1UzCLgHAGe90nla",
-//   "r1tUApJcsuUXAL31ho7u",
-//   "r4s39h0GYySo9jRMDzRp",
-//   "rQ5dUGbrI39Wdmh9mKas",
-//   "rduuEWnYIzs7y6MhFGFa",
-//   "rk6J0cHqJ0n1rNumoLQN",
-//   "sigA5j59P9hQMBEjVeFX",
-//   "soJ8nLrONMVR6418MW9a",
-//   "tFhU2RCfQqDeIJtkj6sV",
-//   "tGSictvbPtemqD8eEfoX",
-//   "tUDLcW1lnnACkRt1w1rU",
-//   "tfJ4YNswuprdfkLl9C6p",
-//   "toSgvRoo9h1iIgtod3jO",
-//   "tz3mkC0lUi34j34qcwi7",
-//   "uAouYEWqBVw0anvxn9XA",
-//   "ut2J705alQgKL9AowPQq",
-//   "v9FjmMONJpg5uiU4SchD",
-//   "w77XqZK2Fa4kY5CtC0hp",
-//   "wXkw0e5NMzQa0mlVYtRN",
-//   "xXhnDacexccFzzAhNeQD",
-//   "y12K8EovFBNVC3eudAGM",
-//   "z5ZPGhQCsUKEPCm8ej7G",
-//   "zL4WdRAu7ucEpVxqe8X6",
-//   "zWJ0oqG0AKEeUIwqc20X",
-//   "zXOek1auvEHOlRfoLTQ8"
+//     const orderIdsToDelete = [];
+// const orderData = [
+//   "2Z4VZTZ0RGOMLB1aJez6",
+//   "5fFjAgiHWUFmNBheO1Zs",
+//   "Bz6M18QhKzqqPtLMiA7K",
+//   "JDCOUR6UXpyMbseylY25",
+//   "OAI3u2zkG2wivU69K8Ig",
+//   "Sa4KAALap3pcCpz45EpF",
+//   "T1CeQo8RXOHJj0IVPAUK",
+//   "VTK9UnfcwblvYUj7oOTl",
+//   "YH6bRCEATcbRF0aT7gqY",
+//   "cLQ92K1L5MlbvtiIcg9C",
+//   "eZr8QTdc7e2ovkMPmrGU",
+//   "lo0XqVeIUe5r1UsOTkwI",
+//   "rP6gfDQwb3njXV4U7Q0w",
+//   "s3eWOD6X6nqAbfh3DRPq",
+//   "uJ6J95exQICZXhOj1HpS",
+//   "wMRrBjPvJmwSSCVBRg4K"
 // ];
+
 
     // this.updateQuantityField("3ZQ6U8vU1viw0Y3fiDGD");
     // this.deleteOrders(orderData);

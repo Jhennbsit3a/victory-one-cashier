@@ -98,6 +98,9 @@
               <v-list-item-content>
                 <v-list-item-title><strong>Payment Method:</strong> {{ selectedOrder.paymentMethod }}</v-list-item-title>
               </v-list-item-content>
+              <v-list-item-content>
+                <v-list-item-title v-if="selectedOrder.paymentMethod === 'Gcash'"><strong>Reference No.:</strong> {{ selectedOrder.referenceNumber }}</v-list-item-title>
+              </v-list-item-content>
             </v-list-item>
             <v-list-item>
               <v-list-item-content>
@@ -136,11 +139,13 @@ export default {
         { text: "Order ID", value: "orderId" },
         { text: "Date", value: "estimatedDeliveryDate" },
         { text: "Status", value: "status" },
+        { text: "Payment Method", value: "paymentMethod" },
         { text: "Actions", value: "actions", sortable: true },
       ],
       orders: [],
       dialogVisible: false,
       selectedOrder: {},
+      referenceNumber:0,
       searchQuery: "", // Search query for filtering
       customerOrders: [],
         totalOrders: 0,
@@ -224,7 +229,7 @@ export default {
             // Loop through cartItems
             orderData.cartItems.forEach((item) => {
             // Check the status of the order
-            if (orderData.paymentMethod === "Pick up") {
+            if (orderData.paymentMethod === "Pick up" || orderData.paymentMethod === "Gcash") {
                 const order = {
                 orderId: orderDoc.id,
                 customerName: customerName,
@@ -235,7 +240,8 @@ export default {
                 quantity: item.Quantity || "N/A",
                 status: orderData.status || "Pending",
                 deliveryAddress: orderData.deliveryAddress,
-                estimatedDeliveryDate: orderData.estimatedDeliveryDate
+                estimatedDeliveryDate: orderData.estimatedDeliveryDate,
+                referenceNumber: orderData.referenceNumber
                 };
                  totalorder++;
                 // Push the order only if the status matches the criteria
