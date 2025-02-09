@@ -185,13 +185,14 @@
                 @input="validateReferenceNumber"
               ></v-text-field>
 
-              <!-- <v-text-field 
-                v-model="receiptNumber" 
-                label="GCash Receipt Number" 
+              <v-text-field 
+                v-model="totalAmount" 
+                label="Total amount to pay" 
                 outlined 
                 dense
+                :disabled="isFetching"
                 required
-              ></v-text-field> -->
+              ></v-text-field>
             </div>
           </v-card-text>
 
@@ -271,7 +272,7 @@
       <v-card-actions>
         <v-row class="w-100" dense>
           <v-col cols="6">
-            <v-btn color="green" block @click="closeReceiptDialog">Close</v-btn>
+            <v-btn color="green" block @click="closeReceiptDialog">Done</v-btn>
           </v-col>
           <v-col cols="6">
             <v-menu offset-y>
@@ -483,7 +484,7 @@ export default {
           // Update the payment method to Cash
           await updateDoc(orderRef, {
             paymentMethod: "Cash",
-            referenceNumber: this.referenceNumber.trim(), // Save reference number
+            // referenceNumber: this.referenceNumber.trim(), // Save reference number
             // paymentStatus: "Paid", // Optional: Add status for tracking
           });
 
@@ -516,12 +517,14 @@ export default {
           if (orderData.paymentMethod === "GCash" || orderData.paymentMethod === "Cash") {
             console.log("Order has already been paid.");
             this.clearCashierData();
+            sessionStorage.clear();
             return;
           }
 
           // Update the payment method to GCash
           await updateDoc(orderRef, {
             paymentMethod: "GCash",
+            referenceNumber: this.referenceNumber, // Save reference number
           });
 
           console.log("Payment successful through GCash.");

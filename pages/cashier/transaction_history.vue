@@ -20,6 +20,7 @@
         dense
       >
         <template #item.actions="{ item }">
+          <v-btn small color="primary" @click="viewDetails(item)">View Orders</v-btn>
           <v-btn small color="red" @click="showDeleteDialog(item)" class="white--text">Delete</v-btn>
         </template>
       </v-data-table>
@@ -36,6 +37,64 @@
           </v-card-actions>
         </v-card>
       </v-dialog>
+
+          <!-- Order Details Dialog -->
+    <v-dialog v-model="dialogVisible" max-width="600px">
+      <v-card>
+        <v-card-title>
+          Order Details
+          <v-spacer></v-spacer>
+          <v-btn icon @click="closeDialog">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-card-title>
+        <v-card-text>
+          <v-list>
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title><strong>Order ID:</strong> {{ selectedOrder.orderId }}</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title><strong>Customer Name:</strong> {{ selectedOrder.customerName }}</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title><strong>Product Name:</strong> {{ selectedOrder.productName }}</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title><strong>Quantity:</strong> {{ selectedOrder.quantity }}</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title><strong>Payment Method:</strong> {{ selectedOrder.paymentMethod }}</v-list-item-title>
+              </v-list-item-content>
+              <v-list-item-content>
+                <v-list-item-title v-if="selectedOrder.paymentMethod !== 'Cash'"><strong>Reference No.:</strong> {{ selectedOrder.gcashReferenceNumber }}</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title><strong>Total:</strong> {{ selectedOrder.total }}</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title><strong>Status:</strong> {{ selectedOrder.status }}</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+          </v-list>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn text @click="closeDialog">Close</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     </v-card>
   </v-container>
 </template>
@@ -54,8 +113,8 @@ export default {
         { text: "Total", value: "total" },
         { text: "Quantity", value: "quantity" },
         { text: "Status", value: "status" },
-        { text: "Action", value: "actions" },
         { text: "Date", value: "estimatedDeliveryDate" },
+        { text: "Action", value: "actions" },
       ],
       searchQuery: "", // For search input
       orders: [],
@@ -78,6 +137,10 @@ export default {
     },
   },
   methods: {
+    viewDetails(order) {
+      this.selectedOrder = order;
+      this.dialogVisible = true;
+    },
     showDeleteDialog(item) {
       this.itemToDelete = item;
       this.deleteDialogVisible = true;
@@ -213,7 +276,9 @@ export default {
                 quantity: item.Quantity || 0,
                 total: order.total,
                 status: order.status,
-                estimatedDeliveryDate: order.estimatedDeliveryDate
+                estimatedDeliveryDate: order.estimatedDeliveryDate,
+                paymentMethod: order.paymentMethod,
+                gcashReferenceNumber: order.referenceNumber
               }));
             }
             return [];

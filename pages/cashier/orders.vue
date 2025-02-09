@@ -40,7 +40,7 @@
 
     <!-- Orders Table -->
     <v-card>
-      <v-card-title>Orders</v-card-title>
+      <v-card-title>Pick Up Orders</v-card-title>
       <!-- Search Input -->
       <v-text-field
         v-model="searchQuery"
@@ -224,7 +224,7 @@ export default {
             // Loop through cartItems
             orderData.cartItems.forEach((item) => {
             // Check the status of the order
-            if (orderData.status === "Pending") {
+            if (orderData.paymentMethod === "Pick up") {
                 const order = {
                 orderId: orderDoc.id,
                 customerName: customerName,
