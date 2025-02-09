@@ -267,17 +267,33 @@
           <p>Visit Again!</p>
         </div>
       </v-card-text>
-
+      
       <v-card-actions>
         <v-row class="w-100" dense>
           <v-col cols="6">
             <v-btn color="green" block @click="closeReceiptDialog">Close</v-btn>
           </v-col>
           <v-col cols="6">
-            <v-btn color="blue" block @click="saveReceiptAsPDF">Save as PDF</v-btn>
+            <v-menu offset-y>
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn color="blue" block v-bind="attrs" v-on="on">
+                  Save As
+                  <v-icon right>mdi-chevron-down</v-icon>
+                </v-btn>
+              </template>
+              <v-list>
+                <v-list-item @click="saveReceiptAsPDF">
+                  <v-list-item-title>Save as PDF</v-list-item-title>
+                </v-list-item>
+                <v-list-item @click="saveReceiptAsImage">
+                  <v-list-item-title>Save as Image</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
           </v-col>
         </v-row>
       </v-card-actions>
+
     </v-card>
   </v-dialog>
 
@@ -357,39 +373,39 @@ export default {
 
       this.receiptId = `${year}${month}${day}${minutes}${seconds}`;
     },
-    // saveReceiptAsImage() {
-    //   const receiptElement = document.getElementById("receipt-content");
-    //   html2canvas(receiptElement).then((canvas) => {
-    //     const link = document.createElement("a");
-    //     link.href = canvas.toDataURL("image/png");
-    //     link.download = `receipt-${this.receiptId}`;
-    //     link.click();
-    //   });
-    // },
-    // async saveReceiptAsPDF() {
-    //   const receiptElement = document.getElementById("receipt-content");
+    saveReceiptAsImage() {
+      const receiptElement = document.getElementById("receipt-content");
+      html2canvas(receiptElement).then((canvas) => {
+        const link = document.createElement("a");
+        link.href = canvas.toDataURL("image/png");
+        link.download = `receipt-${this.receiptId}`;
+        link.click();
+      });
+    },
+    async saveReceiptAsPDF() {
+      const receiptElement = document.getElementById("receipt-content");
 
-    //   if (!receiptElement) {
-    //     console.error("Receipt element not found.");
-    //     return;
-    //   }
+      if (!receiptElement) {
+        console.error("Receipt element not found.");
+        return;
+      }
 
-    //   try {
-    //     const canvas = await html2canvas(receiptElement, { scale: 2 }); // High quality
-    //     const imgData = canvas.toDataURL("image/png");
+      try {
+        const canvas = await html2canvas(receiptElement, { scale: 2 }); // High quality
+        const imgData = canvas.toDataURL("image/png");
 
-    //     // Standard receipt size: 80mm width, dynamic height
-    //     const pdfWidth = 80; // 80mm width (standard)
-    //     const pdfHeight = (canvas.height * pdfWidth) / canvas.width; // Keep aspect ratio
+        // Standard receipt size: 80mm width, dynamic height
+        const pdfWidth = 80; // 80mm width (standard)
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width; // Keep aspect ratio
 
-    //     const pdf = new jsPDF("p", "mm", [pdfWidth, pdfHeight]); // Custom size
+        const pdf = new jsPDF("p", "mm", [pdfWidth, pdfHeight]); // Custom size
 
-    //     pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-    //     pdf.save(`receipt-${this.receiptId}.pdf`);
-    //   } catch (error) {
-    //     console.error("Error generating PDF:", error);
-    //   }
-    // },
+        pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+        pdf.save(`receipt-${this.receiptId}.pdf`);
+      } catch (error) {
+        console.error("Error generating PDF:", error);
+      }
+    },
     async saveReceiptAsPDF() {
   const receiptElement = document.getElementById("receipt-content");
 
