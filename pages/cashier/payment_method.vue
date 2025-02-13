@@ -287,8 +287,8 @@
                 </v-btn>
               </template>
               <v-list>
-                <v-list-item @click="saveReceiptAsPDF">
-                  <v-list-item-title>Save as PDF</v-list-item-title>
+                <v-list-item @click="printReceipt">
+                  <v-list-item-title>Print</v-list-item-title>
                 </v-list-item>
                 <v-list-item @click="saveReceiptAsImage">
                   <v-list-item-title>Save as Image</v-list-item-title>
@@ -387,7 +387,7 @@ export default {
         link.click();
       });
     },
-    async saveReceiptAsPDF() {
+    async printReceipt() {
       const receiptElement = document.getElementById("receipt-content");
 
       if (!receiptElement) {
@@ -401,53 +401,71 @@ export default {
 
         // Standard receipt size: 80mm width, dynamic height
         const pdfWidth = 80; // 80mm width (standard)
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width; // Keep aspect ratio
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width; // Maintain aspect ratio
 
         const pdf = new jsPDF("p", "mm", [pdfWidth, pdfHeight]); // Custom size
-
         pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-        pdf.save(`receipt-${this.receiptId}.pdf`);
+
+        // Create an iframe to handle printing
+        const iframe = document.createElement("iframe");
+        iframe.style.position = "absolute";
+        iframe.style.width = "0px";
+        iframe.style.height = "0px";
+        iframe.style.border = "none";
+        document.body.appendChild(iframe);
+
+        iframe.onload = () => {
+          setTimeout(() => {
+            iframe.contentWindow.focus(); // Ensure focus before printing
+            iframe.contentWindow.print(); // Trigger print
+          }, 500); // Delay to allow print dialog to open
+        };
+
+        // Write the PDF data to the iframe
+        iframe.src = pdf.output("bloburl");
       } catch (error) {
-        console.error("Error generating PDF:", error);
+        console.error("Error generating print:", error);
       }
     },
-    async saveReceiptAsPDF() {
-  const receiptElement = document.getElementById("receipt-content");
 
-  if (!receiptElement) {
-    console.error("Receipt element not found.");
-    return;
-  }
 
-  try {
-    const canvas = await html2canvas(receiptElement, { scale: 2 }); // High quality
-    const imgData = canvas.toDataURL("image/png");
+//     async saveReceiptAsPDF() {
+//   const receiptElement = document.getElementById("receipt-content");
 
-    // Standard receipt size: 80mm width, dynamic height
-    const pdfWidth = 80; // 80mm width (standard)
-    const pdfHeight = (canvas.height * pdfWidth) / canvas.width; // Maintain aspect ratio
+//   if (!receiptElement) {
+//     console.error("Receipt element not found.");
+//     return;
+//   }
 
-    const pdf = new jsPDF("p", "mm", [pdfWidth, pdfHeight]); // Custom size
+//   try {
+//     const canvas = await html2canvas(receiptElement, { scale: 2 }); // High quality
+//     const imgData = canvas.toDataURL("image/png");
 
-    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+//     // Standard receipt size: 80mm width, dynamic height
+//     const pdfWidth = 80; // 80mm width (standard)
+//     const pdfHeight = (canvas.height * pdfWidth) / canvas.width; // Maintain aspect ratio
 
-    // Save PDF file
-    const pdfFileName = `receipt-${this.receiptId}.pdf`;
-    pdf.save(pdfFileName);
+//     const pdf = new jsPDF("p", "mm", [pdfWidth, pdfHeight]); // Custom size
 
-    // Open print dialog after a short delay (to ensure the file is saved first)
-    setTimeout(() => {
-      const printWindow = window.open(pdf.output("bloburl"), "_blank");
-      if (printWindow) {
-        printWindow.print(); // Trigger print dialog
-      } else {
-        console.error("Failed to open print dialog.");
-      }
-    }, 1000); // Adjust delay if needed
-  } catch (error) {
-    console.error("Error generating PDF:", error);
-  }
-},
+//     pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+
+//     // Save PDF file
+//     const pdfFileName = `receipt-${this.receiptId}.pdf`;
+//     pdf.save(pdfFileName);
+
+//     // Open print dialog after a short delay (to ensure the file is saved first)
+//     setTimeout(() => {
+//       const printWindow = window.open(pdf.output("bloburl"), "_blank");
+//       if (printWindow) {
+//         printWindow.print(); // Trigger print dialog
+//       } else {
+//         console.error("Failed to open print dialog.");
+//       }
+//     }, 1000); // Adjust delay if needed
+//   } catch (error) {
+//     console.error("Error generating PDF:", error);
+//   }
+// },
     calculateChange() {
       if (this.cashGiven >= this.totalAmount && (this.totalAmount && this.cashGiven !== 0)) {
         this.generateReceiptId()
