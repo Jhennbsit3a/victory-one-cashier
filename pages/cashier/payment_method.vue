@@ -279,22 +279,7 @@
             <v-btn color="green" block @click="closeReceiptDialog">Done</v-btn>
           </v-col>
           <v-col cols="6">
-            <v-menu offset-y>
-              <template v-slot:activator="{ on, attrs }">
-                <v-btn color="blue" block v-bind="attrs" v-on="on">
-                  Save As
-                  <v-icon right>mdi-chevron-down</v-icon>
-                </v-btn>
-              </template>
-              <v-list>
-                <v-list-item @click="printReceipt">
-                  <v-list-item-title>Print</v-list-item-title>
-                </v-list-item>
-                <v-list-item @click="saveReceiptAsImage">
-                  <v-list-item-title>Save as Image</v-list-item-title>
-                </v-list-item>
-              </v-list>
-            </v-menu>
+            <v-btn color="blue" block @click="printReceipt">Print</v-btn>
           </v-col>
         </v-row>
       </v-card-actions>
